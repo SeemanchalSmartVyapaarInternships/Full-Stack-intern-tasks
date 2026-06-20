@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+:root {
+  --sidebar-bg: #1e2a4a;
+  --sidebar-border: rgba(255,255,255,0.08);
+  --sidebar-text: #94b4d8;
+  --sidebar-muted: #4e6a99;
+  --sidebar-icon: #5a81b4;
+  --sidebar-hover-bg: rgba(255,255,255,0.05);
+
+  --topbar-bg: #ffffff;
+  --topbar-border: #e2e8f0;
+  --topbar-shadow: 0 1px 4px rgba(0,0,0,0.06);
+
+  --content-bg: #f1f5f9;
+
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --card-shadow-hover: 0 12px 40px rgba(37,99,235,0.12);
+  --card-blur-shadow: rgba(37,99,235,0.15);
+
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --text-body: #475569;
+
+  --border-color: #e2e8f0;
+  --divider: #f1f5f9;
+
+  --input-bg: #f8fafc;
+  --input-border: #e2e8f0;
+  --input-text: #1e293b;
+  --input-placeholder: #94a3b8;
+
+  --table-head-bg: #f8fafc;
+  --table-row-hover: rgba(59,130,246,0.03);
+
+  --blue: #2563eb;
+  --blue-bg: #eff6ff;
+  --blue-text: #1d4ed8;
+  --blue-muted: #dbeafe;
+
+  --green-bg: #dcfce7;
+  --green-text: #16a34a;
+  --red-bg: #fee2e2;
+  --red-text: #dc2626;
+  --yellow-bg: #fef9c3;
+  --yellow-text: #ca8a04;
+
+  --notif-unread-bg: #f0f7ff;
+
+  --icon-blue: rgba(37,99,235,0.1);
+  --icon-green: rgba(22,163,74,0.1);
+  --icon-yellow: rgba(202,138,4,0.1);
+  --icon-red: rgba(220,38,38,0.1);
+  --icon-purple: rgba(124,58,237,0.1);
+}
+
+.dark {
+  --sidebar-bg: #0d1526;
+  --sidebar-border: rgba(255,255,255,0.06);
+  --sidebar-text: #7b9bc8;
+  --sidebar-muted: #2e4a72;
+  --sidebar-icon: #4a6fa8;
+  --sidebar-hover-bg: rgba(255,255,255,0.04);
+
+  --topbar-bg: #1a2744;
+  --topbar-border: #2d3f5e;
+  --topbar-shadow: 0 1px 6px rgba(0,0,0,0.4);
+
+  --content-bg: #0f172a;
+
+  --card-bg: #1a2744;
+  --card-border: #2d3f5e;
+  --card-shadow: 0 1px 6px rgba(0,0,0,0.3);
+  --card-shadow-hover: 0 12px 40px rgba(37,99,235,0.2);
+  --card-blur-shadow: rgba(59,130,246,0.25);
+
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-body: #8fa5c0;
+
+  --border-color: #2d3f5e;
+  --divider: #1e3050;
+
+  --input-bg: #152040;
+  --input-border: #2d3f5e;
+  --input-text: #e2e8f0;
+  --input-placeholder: #64748b;
+
+  --table-head-bg: #152040;
+  --table-row-hover: rgba(59,130,246,0.07);
+
+  --blue: #3b82f6;
+  --blue-bg: #1e3a5f;
+  --blue-text: #93c5fd;
+  --blue-muted: #1e3a5f;
+
+  --green-bg: rgba(22,163,74,0.15);
+  --green-text: #4ade80;
+  --red-bg: rgba(220,38,38,0.15);
+  --red-text: #f87171;
+  --yellow-bg: rgba(202,138,4,0.15);
+  --yellow-text: #fbbf24;
+
+  --notif-unread-bg: #1a2f50;
+
+  --icon-blue: rgba(59,130,246,0.15);
+  --icon-green: rgba(74,222,128,0.15);
+  --icon-yellow: rgba(251,191,36,0.15);
+  --icon-red: rgba(248,113,113,0.15);
+  --icon-purple: rgba(167,139,250,0.15);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+*::-webkit-scrollbar { width: 5px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 9999px;
+}
+
+.sidebar-transition {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-3d {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+  transform-style: preserve-3d;
+}
+
+.card-3d:hover {
+  transform: translateY(-8px) rotateX(4deg) scale(1.02);
+  box-shadow: -15px 20px 30px -5px var(--card-blur-shadow), 15px 20px 30px -5px var(--card-blur-shadow), 0 10px 20px -5px rgba(0,0,0,0.1);
+}
+
+.holographic-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s ease;
+}
+
+.holographic-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    0deg, 
+    transparent, 
+    transparent 30%, 
+    rgba(37, 99, 235, 0.4) /* Shifted cyan to matching theme blue */
+  );
+  transform: rotate(-45deg);
+  transition: all 0.7s ease;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 50; /* Needs to be above the card content to shine over it */
+}
+
+.holographic-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 0 30px rgba(37, 99, 235, 0.5);
+}
+
+.holographic-card:hover::before {
+  opacity: 1;
+  transform: rotate(-45deg) translateY(100%);
+}
+
+.glass {
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+}
+
+.nav-link {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-link:hover {
+  background-color: var(--sidebar-hover-bg) !important;
+}
