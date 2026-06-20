@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { BellIcon, SearchIcon, MenuIcon, ChevronDownIcon } from "@/components/ui/Icons";
-import { notificationsData, currentUser } from "@/lib/data";
+import { notificationsData } from "@/lib/data";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
 import UserProfile from "@/components/dashboard/UserProfile";
 
@@ -11,11 +13,26 @@ export default function TopNavbar({ onMenuToggle, onCollapseToggle, collapsed })
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { isDark, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const router = useRouter();
 
   const notifRef = useRef(null);
   const userRef = useRef(null);
 
   const unreadCount = notificationsData.filter((n) => !n.read).length;
+
+  const displayUser = {
+    name: user?.name || "Admin User",
+    role: user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Super Admin",
+    avatar: "/favicon.ico",
+    email: user?.email || "",
+    department: "Management",
+  };
+
+  function handleLogout() {
+    logout();
+    router.replace("/login");
+  }
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -163,14 +180,14 @@ export default function TopNavbar({ onMenuToggle, onCollapseToggle, collapsed })
               className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
               style={{ backgroundColor: "var(--input-bg)", border: "1px solid var(--border-color)" }}
             >
-              <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
+              <img src={displayUser.avatar} alt={displayUser.name} className="w-full h-full object-cover" />
             </div>
             <div className="hidden sm:block text-left">
               <p className="text-xs font-semibold leading-none" style={{ color: "var(--text-primary)" }}>
-                {currentUser.name}
+                {displayUser.name}
               </p>
               <p className="text-[10px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                {currentUser.role}
+                {displayUser.role}
               </p>
             </div>
             <ChevronDownIcon
@@ -181,7 +198,7 @@ export default function TopNavbar({ onMenuToggle, onCollapseToggle, collapsed })
 
           {showUserMenu && (
             <div className="absolute right-0 mt-2 w-64 z-50">
-              <UserProfile user={currentUser} onClose={() => setShowUserMenu(false)} />
+              <UserProfile user={displayUser} onClose={() => setShowUserMenu(false)} onLogout={handleLogout} />
             </div>
           )}
         </div>

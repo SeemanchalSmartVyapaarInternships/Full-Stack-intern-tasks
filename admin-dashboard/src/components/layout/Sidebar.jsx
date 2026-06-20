@@ -4,34 +4,32 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { useAuth } from "@/context/AuthContext";
+import { CloseIcon } from "@/components/ui/Icons";
 import {
-  DashboardIcon,
-  AnalyticsIcon,
-  UsersIcon,
-  InventoryIcon,
-  OrdersIcon,
-  BillingIcon,
-  ReportsIcon,
-  SettingsIcon,
-  CloseIcon,
-} from "@/components/ui/Icons";
-import { navLinks } from "@/lib/data";
+  LayoutDashboard, Users, Package, ShoppingCart, Users2,
+  BarChart2, FileText, Settings, HelpCircle, Building2,
+} from "lucide-react";
 
-const iconMap = {
-  dashboard: DashboardIcon,
-  analytics: AnalyticsIcon,
-  users: UsersIcon,
-  inventory: InventoryIcon,
-  orders: OrdersIcon,
-  billing: BillingIcon,
-  reports: ReportsIcon,
-  settings: SettingsIcon,
-};
+const allNavLinks = [
+  { id: "dashboard", label: "Dashboard",  icon: LayoutDashboard, href: "/dashboard",          roles: ["admin","manager","employee"] },
+  { id: "users",     label: "Users",      icon: Users,           href: "/dashboard/users",     roles: ["admin"] },
+  { id: "analytics", label: "Analytics",  icon: BarChart2,       href: "/dashboard/analytics", roles: ["admin"] },
+  { id: "team",      label: "Team",       icon: Users2,          href: "/dashboard/team",      roles: ["admin","manager"] },
+  { id: "orders",    label: "Orders",     icon: ShoppingCart,    href: "/dashboard/orders",    roles: ["admin","manager","employee"] },
+  { id: "products",  label: "Products",   icon: Package,         href: "/dashboard/products",  roles: ["admin","manager"] },
+  { id: "reports",   label: "Reports",    icon: FileText,        href: "/dashboard/reports",   roles: ["admin","manager"] },
+  { id: "settings",  label: "Settings",   icon: Settings,        href: "/dashboard/settings",  roles: ["admin","manager","employee"] },
+  { id: "support",   label: "Support",    icon: HelpCircle,      href: "/dashboard/support",   roles: ["admin","manager","employee"] },
+];
 
 export default function Sidebar({ isOpen, onClose, collapsed, mobileOnly }) {
   const pathname = usePathname();
   const sidebarRef = useRef(null);
-  const navItemsRef = useRef(null);
+  const { user } = useAuth();
+  const role = user?.role || "employee";
+
+  const navLinks = allNavLinks.filter((l) => l.roles.includes(role));
 
   useEffect(() => {
     if (!mobileOnly) {
@@ -43,15 +41,7 @@ export default function Sidebar({ isOpen, onClose, collapsed, mobileOnly }) {
       gsap.fromTo(
         ".nav-item-anim",
         { x: -12, opacity: 0 },
-        {
-          x: 0,
-          opacity: 1,
-          stagger: 0.04,
-          duration: 0.3,
-          ease: "power2.out",
-          delay: 0.2,
-          clearProps: "transform",
-        }
+        { x: 0, opacity: 1, stagger: 0.04, duration: 0.3, ease: "power2.out", delay: 0.2, clearProps: "transform" }
       );
     }
   }, [mobileOnly]);
@@ -63,52 +53,43 @@ export default function Sidebar({ isOpen, onClose, collapsed, mobileOnly }) {
       style={{ backgroundColor: "var(--sidebar-bg)" }}
       aria-label="Sidebar navigation"
     >
-      <div
-        className="flex items-center justify-between px-4 h-16 shrink-0"
-        style={{ borderBottom: "1px solid var(--sidebar-border)" }}
-      >
+      {/* Logo */}
+      <div className="flex items-center justify-between px-4 h-16 shrink-0"
+        style={{ borderBottom: "1px solid var(--sidebar-border)" }}>
         <div className="flex items-center gap-3 overflow-hidden">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
-            style={{ backgroundColor: "var(--topbar-bg)", border: "1px solid var(--border-color)" }}
-          >
-            <img src="/logo.png" alt="SmartVyapar Logo" className="w-full h-full object-cover" />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ backgroundColor: "var(--blue)" }}>
+            <Building2 size={18} color="#fff" />
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
               <p className="text-white font-bold text-sm leading-tight whitespace-nowrap">SmartVyapar</p>
-              <p className="text-[11px] whitespace-nowrap" style={{ color: "var(--sidebar-muted)" }}>
-                Admin Dashboard
+              <p className="text-[11px] whitespace-nowrap capitalize" style={{ color: "var(--sidebar-muted)" }}>
+                {role} Portal
               </p>
             </div>
           )}
         </div>
         {mobileOnly && (
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-md transition-colors"
-            style={{ color: "var(--sidebar-text)" }}
-            aria-label="Close sidebar"
-          >
+          <button onClick={onClose} className="p-1.5 rounded-md transition-colors"
+            style={{ color: "var(--sidebar-text)" }} aria-label="Close sidebar">
             <CloseIcon className="w-5 h-5" />
           </button>
         )}
       </div>
 
-      <nav ref={navItemsRef} className="flex-1 overflow-y-auto py-4 px-2">
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto py-4 px-2">
         {!collapsed && (
-          <p
-            className="px-3 mb-2 text-[10px] font-semibold tracking-widest uppercase"
-            style={{ color: "var(--sidebar-muted)" }}
-          >
+          <p className="px-3 mb-2 text-[10px] font-semibold tracking-widest uppercase"
+            style={{ color: "var(--sidebar-muted)" }}>
             Main Menu
           </p>
         )}
         <ul className="space-y-0.5">
           {navLinks.map((link) => {
-            const Icon = iconMap[link.icon];
+            const Icon = link.icon;
             const isActive = pathname === link.href;
-
             return (
               <li key={link.id} className="nav-item-anim">
                 <Link
@@ -123,12 +104,11 @@ export default function Sidebar({ isOpen, onClose, collapsed, mobileOnly }) {
                   }}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  {Icon && (
-                    <Icon
-                      className="w-5 h-5 shrink-0"
-                      style={{ color: isActive ? "#ffffff" : "var(--sidebar-icon)" }}
-                    />
-                  )}
+                  <Icon
+                    size={18}
+                    className="shrink-0"
+                    style={{ color: isActive ? "#ffffff" : "var(--sidebar-icon)" }}
+                  />
                   {!collapsed && link.label}
                 </Link>
               </li>
@@ -136,6 +116,22 @@ export default function Sidebar({ isOpen, onClose, collapsed, mobileOnly }) {
           })}
         </ul>
       </nav>
+
+      {/* Role badge at bottom */}
+      {!collapsed && (
+        <div className="px-4 py-3" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style={{ backgroundColor: "var(--blue)" }}>
+              {user?.name?.charAt(0)?.toUpperCase() || "U"}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold truncate text-white">{user?.name || "User"}</p>
+              <p className="text-[10px] capitalize" style={{ color: "var(--sidebar-muted)" }}>{role}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 
@@ -143,16 +139,11 @@ export default function Sidebar({ isOpen, onClose, collapsed, mobileOnly }) {
     return (
       <>
         {isOpen && (
-          <div
-            className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm lg:hidden"
-            onClick={onClose}
-            aria-hidden="true"
-          />
+          <div className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm lg:hidden"
+            onClick={onClose} aria-hidden="true" />
         )}
-        <div
-          className={`fixed inset-y-0 left-0 z-30 w-64 sidebar-transition lg:hidden
-            ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
-        >
+        <div className={`fixed inset-y-0 left-0 z-30 w-64 sidebar-transition lg:hidden
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
           {inner}
         </div>
       </>

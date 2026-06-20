@@ -1,15 +1,16 @@
 "use client";
 
-const feedItems = [
-  { id: 1, icon: "👤", iconBg: "var(--icon-blue)",   title: "New user registered",       sub: "John Doe",              time: "2 min ago" },
-  { id: 2, icon: "📦", iconBg: "var(--icon-green)",  title: "Order #ORD1234 placed",     sub: null,                    time: "12 min ago" },
-  { id: 3, icon: "💰", iconBg: "var(--icon-yellow)", title: "Payment received",           sub: "₹ 2,450 · Completed",   time: "25 min ago" },
-  { id: 4, icon: "🔄", iconBg: "var(--icon-purple)", title: "Product updated",            sub: "Wireless Headphones",   time: "1 hr ago" },
-  { id: 5, icon: "⭐", iconBg: "var(--icon-yellow)", title: "New review received",        sub: "★★★★★",                 time: "2 hr ago" },
-];
-
 import { useEffect, useRef } from "react";
+import { UserPlus, Package, IndianRupee, RefreshCw, Star } from "lucide-react";
 import gsap from "gsap";
+
+const feedItems = [
+  { id: 1, Icon: UserPlus,     iconBg: "var(--icon-blue)",   iconColor: "var(--blue-text)",   title: "New user registered",   sub: "John Doe",            time: "2 min ago" },
+  { id: 2, Icon: Package,      iconBg: "var(--icon-green)",  iconColor: "var(--green-text)",  title: "Order #ORD1234 placed", sub: null,                  time: "12 min ago" },
+  { id: 3, Icon: IndianRupee,  iconBg: "var(--icon-yellow)", iconColor: "var(--yellow-text)", title: "Payment received",      sub: "₹ 2,450 · Completed", time: "25 min ago" },
+  { id: 4, Icon: RefreshCw,    iconBg: "var(--icon-purple)", iconColor: "#7c3aed",            title: "Product updated",       sub: "Wireless Headphones", time: "1 hr ago" },
+  { id: 5, Icon: Star,         iconBg: "var(--icon-yellow)", iconColor: "var(--yellow-text)", title: "New review received",   sub: "5 star rating",       time: "2 hr ago" },
+];
 
 export default function RecentActivityFeed() {
   const cardRef = useRef(null);
@@ -50,26 +51,26 @@ export default function RecentActivityFeed() {
       </p>
 
       <div className="space-y-4">
-        {feedItems.map((item) => (
-          <div key={item.id} className="flex gap-3">
+        {feedItems.map(({ id, Icon, iconBg, iconColor, title, sub, time }) => (
+          <div key={id} className="flex gap-3">
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm shrink-0"
-              style={{ backgroundColor: item.iconBg }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ backgroundColor: iconBg }}
             >
-              {item.icon}
+              <Icon size={16} style={{ color: iconColor }} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold leading-snug" style={{ color: "var(--text-primary)" }}>
-                {item.title}
+                {title}
               </p>
-              {item.sub && (
+              {sub && (
                 <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                  {item.sub}
+                  {sub}
                 </p>
               )}
             </div>
             <span className="text-[10px] whitespace-nowrap mt-0.5" style={{ color: "var(--text-muted)" }}>
-              {item.time}
+              {time}
             </span>
           </div>
         ))}

@@ -2,7 +2,7 @@
 
 import { LogoutIcon, SettingsIcon } from "@/components/ui/Icons";
 
-export default function UserProfile({ user, onClose }) {
+export default function UserProfile({ user, onClose, onLogout }) {
   return (
     <div
       id="user-profile-panel"
@@ -70,7 +70,7 @@ export default function UserProfile({ user, onClose }) {
           style={{ color: "var(--red-text)" }}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--red-bg)")}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-          onClick={onClose}
+          onClick={() => { onClose(); onLogout?.(); }}
           aria-label="Sign out"
         >
           <LogoutIcon className="w-4 h-4" />

@@ -1,6 +1,8 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/context/ThemeContext";
+import AuthProvider from "@/context/AuthContext";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,8 +28,13 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="h-full antialiased font-sans" style={{ backgroundColor: "var(--content-bg)" }}>
-        <ThemeProvider>{children}</ThemeProvider>
+        <GoogleOAuthProvider clientId="921592816077-j36p32makvilta8i9tfkg9kcmkjfaslt.apps.googleusercontent.com">
+          <AuthProvider>
+            <ThemeProvider>{children}</ThemeProvider>
+          </AuthProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );
 }
+

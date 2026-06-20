@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { CloseIcon } from "@/components/ui/Icons";
+import { AlertCircle, Info, CheckCircle2, AlertTriangle } from "lucide-react";
 
 const typeConfig = {
-  alert:   { bg: "var(--red-bg)",    dot: "#ef4444", icon: "🚨" },
-  info:    { bg: "var(--blue-bg)",   dot: "#3b82f6", icon: "ℹ️" },
-  success: { bg: "var(--green-bg)",  dot: "#22c55e", icon: "✅" },
-  warning: { bg: "var(--yellow-bg)", dot: "#eab308", icon: "⚠️" },
+  alert:   { bg: "var(--red-bg)",    dot: "#ef4444", Icon: AlertCircle,   color: "var(--red-text)" },
+  info:    { bg: "var(--blue-bg)",   dot: "#3b82f6", Icon: Info,          color: "var(--blue-text)" },
+  success: { bg: "var(--green-bg)",  dot: "#22c55e", Icon: CheckCircle2,  color: "var(--green-text)" },
+  warning: { bg: "var(--yellow-bg)", dot: "#eab308", Icon: AlertTriangle, color: "var(--yellow-text)" },
 };
 
 export default function NotificationPanel({ notifications, onClose }) {
@@ -87,10 +88,10 @@ export default function NotificationPanel({ notifications, onClose }) {
             >
               <div className="flex gap-3">
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                   style={{ backgroundColor: cfg.bg }}
                 >
-                  {cfg.icon}
+                  <cfg.Icon size={16} style={{ color: cfg.color }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
