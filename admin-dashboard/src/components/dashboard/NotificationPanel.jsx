@@ -26,9 +26,7 @@ export default function NotificationPanel({ notifications, onClose }) {
   return (
     <div
       id="notification-panel"
-      className="rounded-xl overflow-hidden"
-      style={{
-        backgroundColor: "var(--card-bg)",
+      className="card-3d rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)",
         border: "1px solid var(--card-border)",
         boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
       }}

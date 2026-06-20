@@ -39,7 +39,7 @@ export default function UsersPage() {
           </button>
         </div>
 
-        <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="card-3d rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--divider)" }}>
             <div className="relative max-w-xs">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />

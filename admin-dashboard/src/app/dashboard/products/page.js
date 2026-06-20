@@ -43,8 +43,7 @@ export default function ProductsPage() {
             { label: "In Stock",       value: inStock,  color: "var(--green-text)" },
             { label: "Low Stock",      value: lowStock, color: "var(--yellow-text)" },
           ].map(s => (
-            <div key={s.label} className="rounded-xl p-4 text-center"
-              style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+            <div key={s.label} className="card-3d rounded-xl p-4 text-center" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
               <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>{s.label}</p>
             </div>
@@ -52,7 +51,7 @@ export default function ProductsPage() {
         </div>
 
         {/* Table */}
-        <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="card-3d rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

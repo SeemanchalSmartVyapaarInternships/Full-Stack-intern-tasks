@@ -52,8 +52,7 @@ export default function SupportPage() {
           { label: "In Progress",value: tickets.filter(t => t.status === "in-progress").length, color: "var(--blue-text)",   bg: "var(--blue-bg)" },
           { label: "Resolved",   value: tickets.filter(t => t.status === "resolved").length,    color: "var(--green-text)",  bg: "var(--green-bg)" },
         ].map(s => (
-          <div key={s.label} className="rounded-xl p-4 flex items-center gap-3"
-            style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+          <div key={s.label} className="card-3d rounded-xl p-4 flex items-center gap-3" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold"
               style={{ backgroundColor: s.bg, color: s.color }}>{s.value}</div>
             <p className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>{s.label}</p>
@@ -62,7 +61,7 @@ export default function SupportPage() {
       </div>
 
       {/* Tickets list */}
-      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+      <div className="card-3d rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--divider)" }}>
           <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>My Tickets</h3>
           <div className="relative max-w-xs">
@@ -97,7 +96,7 @@ export default function SupportPage() {
       </div>
 
       {/* FAQ accordion */}
-      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+      <div className="card-3d rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--divider)" }}>
           <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Frequently Asked Questions</h3>
         </div>

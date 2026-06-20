@@ -25,7 +25,7 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="card-3d rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

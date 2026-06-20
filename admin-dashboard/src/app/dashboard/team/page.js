@@ -32,8 +32,7 @@ export default function TeamPage() {
             { label: "Active Now",    value: teamMembers.filter(m => m.status === "active").length },
             { label: "On Leave",      value: teamMembers.filter(m => m.status === "on-leave").length },
           ].map((s) => (
-            <div key={s.label} className="rounded-xl p-4 text-center"
-              style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+            <div key={s.label} className="card-3d rounded-xl p-4 text-center" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
               <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{s.value}</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>{s.label}</p>
             </div>
@@ -43,8 +42,7 @@ export default function TeamPage() {
         {/* Team cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {teamMembers.map((m) => (
-            <div key={m.id} className="rounded-xl p-5"
-              style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+            <div key={m.id} className="card-3d rounded-xl p-5" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white"

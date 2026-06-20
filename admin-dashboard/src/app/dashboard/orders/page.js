@@ -37,7 +37,7 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+      <div className="card-3d rounded-xl overflow-hidden" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-3 px-5 py-4" style={{ borderBottom: "1px solid var(--divider)" }}>
           <div className="relative flex-1 min-w-[200px]">

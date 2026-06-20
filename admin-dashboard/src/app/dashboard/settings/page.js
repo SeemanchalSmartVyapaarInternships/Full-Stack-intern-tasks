@@ -47,7 +47,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Profile card */}
-      <div className="rounded-xl p-6" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+      <div className="card-3d rounded-xl p-6" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         {/* Avatar row */}
         <div className="flex items-center gap-4 mb-6 pb-6" style={{ borderBottom: "1px solid var(--divider)" }}>
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white"
@@ -145,7 +145,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Security */}
-      <div className="rounded-xl p-6" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+      <div className="card-3d rounded-xl p-6" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         <h2 className="text-sm font-bold mb-4" style={{ color: "var(--text-primary)" }}>Security</h2>
         <div className="space-y-1">
           {[

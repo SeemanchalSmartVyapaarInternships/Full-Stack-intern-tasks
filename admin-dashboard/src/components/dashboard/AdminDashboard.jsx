@@ -78,8 +78,7 @@ export default function AdminDashboard() {
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Revenue chart */}
-        <div className="lg:col-span-2 rounded-xl p-5"
-          style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="lg:col-span-2 card-3d rounded-xl p-5" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Revenue Overview</h3>
@@ -104,8 +103,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* System health */}
-        <div className="rounded-xl p-5"
-          style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="card-3d rounded-xl p-5" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>System Health</h3>
           <div className="space-y-3">
             {[
@@ -129,7 +127,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent users */}
-      <div className="rounded-xl" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+      <div className="card-3d rounded-xl" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--divider)" }}>
           <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Recently Joined Users</h3>
         </div>

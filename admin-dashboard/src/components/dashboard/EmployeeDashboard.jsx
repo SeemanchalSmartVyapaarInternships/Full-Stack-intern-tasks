@@ -73,7 +73,7 @@ export default function EmployeeDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* My tasks */}
-        <div className="rounded-xl" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="card-3d rounded-xl" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--divider)" }}>
             <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>My Tasks</h3>
           </div>
@@ -103,7 +103,7 @@ export default function EmployeeDashboard() {
         </div>
 
         {/* My orders */}
-        <div className="rounded-xl" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="card-3d rounded-xl" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--divider)" }}>
             <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>My Recent Orders</h3>
           </div>

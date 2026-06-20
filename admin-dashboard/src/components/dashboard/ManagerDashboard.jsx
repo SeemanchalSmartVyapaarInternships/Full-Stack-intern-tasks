@@ -74,8 +74,7 @@ export default function ManagerDashboard() {
       {/* Order pipeline + Team table */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Pipeline */}
-        <div className="rounded-xl p-5"
-          style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="card-3d rounded-xl p-5" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
             Order Pipeline
           </h3>
@@ -98,8 +97,7 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Team performance */}
-        <div className="rounded-xl p-5"
-          style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="card-3d rounded-xl p-5" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Team Performance</h3>
           <div className="space-y-3">
             {teamMembers.map((m) => (
@@ -131,8 +129,7 @@ export default function ManagerDashboard() {
       </div>
 
       {/* Recent activity */}
-      <div className="rounded-xl p-5"
-        style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+      <div className="card-3d rounded-xl p-5" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp size={16} style={{ color: "var(--blue)" }} />
           <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Today&apos;s Activity</h3>
