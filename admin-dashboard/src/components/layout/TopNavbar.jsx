@@ -6,6 +6,7 @@ import { BellIcon, SearchIcon, MenuIcon, ChevronDownIcon } from "@/components/ui
 import { notificationsData } from "@/lib/data";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
+import { CircleUserRound } from "lucide-react";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
 import UserProfile from "@/components/dashboard/UserProfile";
 
@@ -23,8 +24,7 @@ export default function TopNavbar({ onMenuToggle, onCollapseToggle, collapsed })
 
   const displayUser = {
     name: user?.name || "Admin User",
-    role: user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Super Admin",
-    avatar: "/favicon.ico",
+    role: user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Employee",
     email: user?.email || "",
     department: "Management",
   };
@@ -180,7 +180,7 @@ export default function TopNavbar({ onMenuToggle, onCollapseToggle, collapsed })
               className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
               style={{ backgroundColor: "var(--input-bg)", border: "1px solid var(--border-color)" }}
             >
-              <img src={displayUser.avatar} alt={displayUser.name} className="w-full h-full object-cover" />
+              <CircleUserRound size={22} style={{ color: "var(--text-muted)" }} />
             </div>
             <div className="hidden sm:block text-left">
               <p className="text-xs font-semibold leading-none" style={{ color: "var(--text-primary)" }}>

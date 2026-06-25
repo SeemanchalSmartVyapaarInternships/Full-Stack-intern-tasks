@@ -8,7 +8,7 @@ const nodemailer = require("nodemailer");
 const googleClient = new OAuth2Client();
 
 const register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, phone } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({
@@ -39,7 +39,8 @@ const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: role || "employee",
+      phone: phone || null,
+      role: "employee",
     });
 
     return res.status(201).json({
@@ -50,6 +51,7 @@ const register = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        phone: user.phone,
       },
     });
   } catch (err) {

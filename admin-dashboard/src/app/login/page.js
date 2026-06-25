@@ -6,8 +6,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useGoogleLogin } from "@react-oauth/google";
 import {
   Mail, Lock, User, Eye, EyeOff, ShieldCheck,
-  ArrowRight, AlertCircle, CheckCircle2, ChevronDown,
-  KeyRound, HelpCircle, ArrowLeft
+  ArrowRight, AlertCircle, CheckCircle2, Phone,
+  KeyRound, ArrowLeft
 } from "lucide-react";
 
 const API = "http://localhost:8000/api/auth";
@@ -27,7 +27,7 @@ export default function LoginPage() {
   const [showRegPwd, setShowRegPwd] = useState(false);
   
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-  const [registerForm, setRegisterForm] = useState({ name: "", email: "", password: "", role: "employee" });
+  const [registerForm, setRegisterForm] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "" });
   
   const [forgotForm, setForgotForm] = useState({ email: "", otp: "", newPassword: "", resetToken: "" });
 
@@ -84,9 +84,10 @@ export default function LoginPage() {
     e.preventDefault();
     setError(""); setSuccess(""); setLoading(true);
     try {
+      const fullName = `${registerForm.firstName.trim()} ${registerForm.lastName.trim()}`;
       const res = await fetch(`${API}/register`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(registerForm),
+        body: JSON.stringify({ name: fullName, email: registerForm.email, password: registerForm.password, phone: registerForm.phone || undefined }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.message || "Registration failed."); }
@@ -94,7 +95,7 @@ export default function LoginPage() {
         setSuccess("Account created! You can now sign in.");
         switchTab("login");
         setLoginForm({ email: registerForm.email, password: "" });
-        setRegisterForm({ name: "", email: "", password: "", role: "employee" });
+        setRegisterForm({ firstName: "", lastName: "", email: "", phone: "", password: "" });
       }
     } catch { setError("Cannot reach the server."); }
     finally { setLoading(false); }
@@ -261,7 +262,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* ── FORGOT PASSWORD Flow ── */}
+            {/* Forgot Password Flow */}
             {tab === "forgot" && (
               <div className="flex-1">
                 {forgotStep === 1 && (
@@ -307,7 +308,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* ── LOGIN form ── */}
+            {/* Login form */}
             {tab === "login" && (
               <form onSubmit={handleLogin} className="space-y-5 flex-1">
                 <UnderlineInput id="login-email" type="email" placeholder="Email" icon={<Mail size={15} />}
@@ -328,27 +329,22 @@ export default function LoginPage() {
               </form>
             )}
 
-            {/* ── REGISTER form ── */}
+            {/* Register form */}
             {tab === "register" && (
               <form onSubmit={handleRegister} className="space-y-4 flex-1">
-                <UnderlineInput id="register-name" type="text" placeholder="Full Name" icon={<User size={15} />}
-                  value={registerForm.name} onChange={v => setRegisterForm({ ...registerForm, name: v })} />
-                <UnderlineInput id="register-email" type="email" placeholder="Email" icon={<Mail size={15} />}
+                <div className="flex gap-3">
+                  <UnderlineInput id="register-firstname" type="text" placeholder="First Name" icon={<User size={15} />}
+                    value={registerForm.firstName} onChange={v => setRegisterForm({ ...registerForm, firstName: v })} />
+                  <UnderlineInput id="register-lastname" type="text" placeholder="Last Name" icon={<User size={15} />}
+                    value={registerForm.lastName} onChange={v => setRegisterForm({ ...registerForm, lastName: v })} />
+                </div>
+                <UnderlineInput id="register-phone" type="tel" placeholder="Phone Number" icon={<Phone size={15} />}
+                  value={registerForm.phone} onChange={v => setRegisterForm({ ...registerForm, phone: v })} />
+                <UnderlineInput id="register-email" type="email" placeholder="Email Address" icon={<Mail size={15} />}
                   value={registerForm.email} onChange={v => setRegisterForm({ ...registerForm, email: v })} />
                 <UnderlineInput id="register-password" type={showRegPwd ? "text" : "password"} placeholder="Password (min. 6 chars)" icon={<Lock size={15} />}
                   value={registerForm.password} onChange={v => setRegisterForm({ ...registerForm, password: v })}
                   suffix={<button type="button" onClick={() => setShowRegPwd(p => !p)} style={{ color: "var(--text-muted)" }}>{showRegPwd ? <EyeOff size={14} /> : <Eye size={14} />}</button>} />
-                
-                <div className="flex items-center gap-3 pb-1" style={{ borderBottom: "1px solid var(--input-border)" }}>
-                  <span style={{ color: "var(--text-muted)" }}><ShieldCheck size={15} /></span>
-                  <select id="register-role" value={registerForm.role} onChange={e => setRegisterForm({ ...registerForm, role: e.target.value })}
-                    className="flex-1 bg-transparent text-sm appearance-none focus:outline-none" style={{ color: "var(--text-primary)" }}>
-                    <option value="employee">Employee</option>
-                    <option value="manager">Manager</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                  <ChevronDown size={13} style={{ color: "var(--text-muted)", pointerEvents: "none" }} />
-                </div>
                 <div className="flex justify-end pt-1">
                   <button type="submit" disabled={loading} className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white disabled:opacity-60 transition-all hover:opacity-90"
                     style={{ backgroundColor: "var(--blue)", boxShadow: "0 4px 14px rgba(37,99,235,0.4)" }}>

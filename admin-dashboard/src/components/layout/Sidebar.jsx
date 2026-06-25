@@ -7,7 +7,7 @@ import gsap from "gsap";
 import { useAuth } from "@/context/AuthContext";
 import { CloseIcon } from "@/components/ui/Icons";
 import {
-  LayoutDashboard, Users, Package, ShoppingCart, Users2,
+  LayoutDashboard, Users, FolderKanban, ListTodo, Users2,
   BarChart2, FileText, Settings, HelpCircle, Building2,
 } from "lucide-react";
 
@@ -16,8 +16,8 @@ const allNavLinks = [
   { id: "users",     label: "Users",      icon: Users,           href: "/dashboard/users",     roles: ["admin"] },
   { id: "analytics", label: "Analytics",  icon: BarChart2,       href: "/dashboard/analytics", roles: ["admin"] },
   { id: "team",      label: "Team",       icon: Users2,          href: "/dashboard/team",      roles: ["admin","manager"] },
-  { id: "orders",    label: "Orders",     icon: ShoppingCart,    href: "/dashboard/orders",    roles: ["admin","manager","employee"] },
-  { id: "products",  label: "Products",   icon: Package,         href: "/dashboard/products",  roles: ["admin","manager"] },
+  { id: "projects",  label: "Projects",   icon: FolderKanban,    href: "/dashboard/projects",  roles: ["admin","manager","employee"] },
+  { id: "tasks",     label: "Tasks",      icon: ListTodo,        href: "/dashboard/tasks",     roles: ["admin","manager"] },
   { id: "reports",   label: "Reports",    icon: FileText,        href: "/dashboard/reports",   roles: ["admin","manager"] },
   { id: "settings",  label: "Settings",   icon: Settings,        href: "/dashboard/settings",  roles: ["admin","manager","employee"] },
   { id: "support",   label: "Support",    icon: HelpCircle,      href: "/dashboard/support",   roles: ["admin","manager","employee"] },

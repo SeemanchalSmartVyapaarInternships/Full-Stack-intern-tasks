@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const { User, Department } = require("../models");
 
 const getProfile = async (req, res) => {
   try {
@@ -30,6 +30,7 @@ const getAllUsers = async (req, res) => {
     const users = await User.findAll({
       attributes: { exclude: ["password"] },
       order: [["createdAt", "DESC"]],
+      include: [{ model: Department, as: "department", attributes: ["id", "name"] }],
     });
 
     return res.status(200).json({
@@ -51,6 +52,7 @@ const getTeam = async (req, res) => {
       where: { role: ["manager", "employee"] },
       attributes: { exclude: ["password"] },
       order: [["name", "ASC"]],
+      include: [{ model: Department, as: "department", attributes: ["id", "name"] }],
     });
 
     return res.status(200).json({
@@ -63,6 +65,34 @@ const getTeam = async (req, res) => {
       success: false,
       message: "Internal server error.",
     });
+  }
+};
+
+const getManagers = async (req, res) => {
+  try {
+    const managers = await User.findAll({
+      where: { role: "manager" },
+      attributes: ["id", "name", "email"],
+      order: [["name", "ASC"]],
+    });
+
+    return res.status(200).json({ success: true, data: managers });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+const getEmployees = async (req, res) => {
+  try {
+    const employees = await User.findAll({
+      where: { role: "employee" },
+      attributes: ["id", "name", "email"],
+      order: [["name", "ASC"]],
+    });
+
+    return res.status(200).json({ success: true, data: employees });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Internal server error." });
   }
 };
 
@@ -93,4 +123,29 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, getAllUsers, getTeam, updateProfile };
+const updateUserRole = async (req, res) => {
+  const { role } = req.body;
+  const validRoles = ["admin", "manager", "employee"];
+
+  if (!role || !validRoles.includes(role)) {
+    return res.status(400).json({ success: false, message: "Valid role is required (admin, manager, employee)." });
+  }
+
+  try {
+    const targetUser = await User.findByPk(req.params.id);
+    if (!targetUser) return res.status(404).json({ success: false, message: "User not found." });
+
+    targetUser.role = role;
+    await targetUser.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Role updated to ${role}.`,
+      data: { id: targetUser.id, name: targetUser.name, email: targetUser.email, role: targetUser.role },
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+module.exports = { getProfile, getAllUsers, getTeam, getManagers, getEmployees, updateProfile, updateUserRole };

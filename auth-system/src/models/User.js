@@ -32,6 +32,17 @@ const User = sequelize.define("User", {
     defaultValue: "employee",
     allowNull: false,
   },
+  departmentId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      len: { args: [10, 15], msg: "Phone must be between 10 and 15 characters" },
+    },
+  },
 });
 
 module.exports = User;

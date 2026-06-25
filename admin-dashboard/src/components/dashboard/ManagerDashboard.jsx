@@ -1,41 +1,76 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useAuth } from "@/context/AuthContext";
-import { Users2, ShoppingCart, CheckCircle2, Clock, ArrowUpRight, TrendingUp } from "lucide-react";
-
-const stats = [
-  { id: "team",      label: "Team Members", value: "24",    change: "+2 this month",  Icon: Users2,       bg: "var(--icon-blue)",   color: "var(--blue-text)" },
-  { id: "orders",   label: "Active Orders", value: "348",   change: "+28 today",      Icon: ShoppingCart, bg: "var(--icon-green)",  color: "var(--green-text)" },
-  { id: "done",     label: "Completed",     value: "1,247", change: "This month",     Icon: CheckCircle2, bg: "var(--icon-purple)", color: "#7c3aed" },
-  { id: "pending",  label: "Pending Tasks", value: "56",    change: "Due this week",  Icon: Clock,        bg: "var(--icon-yellow)", color: "var(--yellow-text)" },
-];
-
-const pipeline = [
-  { label: "New",         count: 42, color: "var(--blue)" },
-  { label: "Processing",  count: 87, color: "var(--yellow-text)" },
-  { label: "Shipped",     count: 63, color: "#7c3aed" },
-  { label: "Delivered",   count: 156, color: "var(--green-text)" },
-  { label: "Cancelled",   count: 12, color: "var(--red-text)" },
-];
-
-const teamMembers = [
-  { name: "Priya Singh",   role: "Sales Lead",     orders: 56, status: "active" },
-  { name: "Amit Verma",    role: "Field Agent",    orders: 43, status: "active" },
-  { name: "Neha Gupta",    role: "Support",        orders: 38, status: "on-leave" },
-  { name: "Kiran Patel",   role: "Delivery Agent", orders: 71, status: "active" },
-];
+import { apiFetch } from "@/lib/api";
+import { Users2, FolderKanban, CheckCircle2, Clock, TrendingUp, Loader2 } from "lucide-react";
 
 export default function ManagerDashboard() {
   const { user } = useAuth();
   const cardsRef = useRef([]);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    gsap.fromTo(cardsRef.current.filter(Boolean),
-      { y: 40, opacity: 0 },
-      { y: 0, opacity: 1, stagger: 0.08, duration: 0.6, ease: "back.out(1.4)", clearProps: "transform" }
-    );
+    async function load() {
+      try {
+        const [teamRes, projRes, tasksRes] = await Promise.all([
+          apiFetch("/users/team"),
+          apiFetch("/projects?limit=100"),
+          apiFetch("/tasks?limit=100"),
+        ]);
+
+        const team = teamRes.data || [];
+        const projects = projRes.data || [];
+        const tasks = tasksRes.data || [];
+
+        const projectPipeline = {};
+        projects.forEach(p => { projectPipeline[p.status] = (projectPipeline[p.status] || 0) + 1; });
+
+        const tasksDone = tasks.filter(t => t.status === "done").length;
+        const tasksPending = tasks.filter(t => t.status === "todo" || t.status === "in_progress").length;
+
+        setData({
+          team,
+          totalTeam: team.length,
+          totalProjects: projects.length,
+          tasksDone,
+          tasksPending,
+          projectPipeline,
+        });
+      } catch {}
+      setLoading(false);
+    }
+    load();
   }, []);
+
+  useEffect(() => {
+    if (!loading && cardsRef.current.filter(Boolean).length > 0) {
+      gsap.fromTo(cardsRef.current.filter(Boolean),
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.08, duration: 0.6, ease: "back.out(1.4)", clearProps: "transform" }
+      );
+    }
+  }, [loading]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={24} className="animate-spin" style={{ color: "var(--blue)" }} />
+      </div>
+    );
+  }
+
+  const statCards = [
+    { id: "team",   label: "Team Members",   value: data?.totalTeam || 0,    Icon: Users2,       bg: "var(--icon-blue)",   color: "var(--blue-text)" },
+    { id: "proj",   label: "Active Projects", value: data?.totalProjects || 0, Icon: FolderKanban, bg: "var(--icon-green)",  color: "var(--green-text)" },
+    { id: "done",   label: "Tasks Completed", value: data?.tasksDone || 0,    Icon: CheckCircle2, bg: "var(--icon-purple)", color: "#7c3aed" },
+    { id: "pend",   label: "Tasks Pending",   value: data?.tasksPending || 0, Icon: Clock,        bg: "var(--icon-yellow)", color: "var(--yellow-text)" },
+  ];
+
+  const pipelineLabels = { planning: "Planning", active: "Active", on_hold: "On Hold", completed: "Completed", cancelled: "Cancelled" };
+  const pipelineColors = { planning: "var(--blue)", active: "var(--green-text)", on_hold: "var(--yellow-text)", completed: "#7c3aed", cancelled: "var(--red-text)" };
+  const maxPipeline = Math.max(...Object.values(data?.projectPipeline || { x: 1 }), 1);
 
   return (
     <div className="space-y-6">
@@ -55,40 +90,35 @@ export default function ManagerDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {stats.map((s, i) => (
+        {statCards.map((s, i) => (
           <div key={s.id} ref={(el) => (cardsRef.current[i] = el)}
             className="card-3d rounded-xl p-5"
             style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)", boxShadow: "var(--card-shadow)" }}>
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: s.bg }}>
-                <s.Icon size={18} style={{ color: s.color }} />
-              </div>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: s.bg }}>
+              <s.Icon size={18} style={{ color: s.color }} />
             </div>
             <p className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{s.value}</p>
             <p className="text-xs font-semibold mt-0.5" style={{ color: "var(--text-secondary)" }}>{s.label}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>{s.change}</p>
           </div>
         ))}
       </div>
 
-      {/* Order pipeline + Team table */}
+      {/* Project pipeline + Team */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Pipeline */}
         <div className="card-3d rounded-xl p-5" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
-            Order Pipeline
-          </h3>
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Project Pipeline</h3>
           <div className="space-y-3">
-            {pipeline.map((p) => {
-              const pct = Math.round((p.count / 360) * 100);
+            {Object.entries(pipelineLabels).map(([key, label]) => {
+              const count = data?.projectPipeline?.[key] || 0;
+              const pct = Math.round((count / maxPipeline) * 100);
               return (
-                <div key={p.label}>
+                <div key={key}>
                   <div className="flex justify-between text-xs mb-1">
-                    <span style={{ color: "var(--text-body)" }}>{p.label}</span>
-                    <span style={{ color: p.color }}>{p.count} orders</span>
+                    <span style={{ color: "var(--text-body)" }}>{label}</span>
+                    <span style={{ color: pipelineColors[key] }}>{count} project{count !== 1 ? "s" : ""}</span>
                   </div>
                   <div className="h-2 rounded-full" style={{ backgroundColor: "var(--input-bg)" }}>
-                    <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: p.color }} />
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: pipelineColors[key] }} />
                   </div>
                 </div>
               );
@@ -96,12 +126,12 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
-        {/* Team performance */}
+        {/* Team list */}
         <div className="card-3d rounded-xl p-5" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Team Performance</h3>
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Team Members</h3>
           <div className="space-y-3">
-            {teamMembers.map((m) => (
-              <div key={m.name} className="flex items-center justify-between">
+            {(data?.team || []).slice(0, 5).map((m) => (
+              <div key={m.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
                     style={{ backgroundColor: "var(--blue)" }}>
@@ -109,42 +139,20 @@ export default function ManagerDashboard() {
                   </div>
                   <div>
                     <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>{m.name}</p>
-                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{m.role}</p>
+                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{m.email}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{m.orders}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor: m.status === "active" ? "var(--green-bg)" : "var(--yellow-bg)",
-                      color: m.status === "active" ? "var(--green-text)" : "var(--yellow-text)"
-                    }}>
-                    {m.status}
-                  </span>
-                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize"
+                  style={{
+                    backgroundColor: m.role === "manager" ? "var(--green-bg)" : "var(--input-bg)",
+                    color: m.role === "manager" ? "var(--green-text)" : "var(--text-muted)",
+                  }}>{m.role}</span>
               </div>
             ))}
+            {(data?.team || []).length === 0 && (
+              <div className="text-center py-6 text-sm" style={{ color: "var(--text-muted)" }}>No team members yet.</div>
+            )}
           </div>
-        </div>
-      </div>
-
-      {/* Recent activity */}
-      <div className="card-3d rounded-xl p-5" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp size={16} style={{ color: "var(--blue)" }} />
-          <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Today&apos;s Activity</h3>
-        </div>
-        <div className="grid grid-cols-3 gap-4 text-center">
-          {[
-            { label: "Orders Placed",   value: "28", color: "var(--blue)" },
-            { label: "Orders Delivered",value: "19", color: "var(--green-text)" },
-            { label: "Issues Raised",   value: "3",  color: "var(--red-text)" },
-          ].map((m) => (
-            <div key={m.label} className="rounded-xl py-4" style={{ backgroundColor: "var(--input-bg)" }}>
-              <p className="text-2xl font-bold" style={{ color: m.color }}>{m.value}</p>
-              <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>{m.label}</p>
-            </div>
-          ))}
         </div>
       </div>
     </div>
