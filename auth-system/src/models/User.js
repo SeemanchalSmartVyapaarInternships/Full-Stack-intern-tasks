@@ -43,6 +43,10 @@ const User = sequelize.define("User", {
       len: { args: [10, 15], msg: "Phone must be between 10 and 15 characters" },
     },
   },
+  avatarUrl: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 });
 
 module.exports = User;

@@ -7,6 +7,7 @@ const userRoutes = require("./routes/userRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const projectRoutes = require("./routes/projectRoutes");
 const taskRoutes = require("./routes/taskRoutes");
+const activityRoutes = require("./routes/activityRoutes");
 
 const app = express();
 
@@ -32,6 +33,9 @@ const authLimiter = rateLimit({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static uploads
+app.use("/uploads", express.static("uploads"));
+
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -45,6 +49,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/activities", activityRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

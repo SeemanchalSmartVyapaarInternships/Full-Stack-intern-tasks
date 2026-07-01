@@ -1,6 +1,6 @@
 "use client";
 import RoleGuard from "@/components/auth/RoleGuard";
-import { Mail, Loader2, Building2 } from "lucide-react";
+import { Mail, Loader2, Building2, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
 
@@ -12,6 +12,8 @@ export default function TeamPage() {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [deptFilter, setDeptFilter] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -32,14 +34,41 @@ export default function TeamPage() {
     load();
   }, []);
 
+  const filteredTeam = team.filter(m => {
+    const matchesSearch = m.name.toLowerCase().includes(search.toLowerCase()) || 
+                          m.email.toLowerCase().includes(search.toLowerCase());
+    const matchesDept = !deptFilter || m.departmentId === deptFilter;
+    return matchesSearch && matchesDept;
+  });
+
   return (
     <RoleGuard allowedRoles={["admin", "manager"]}>
       <div className="space-y-5">
         <div>
           <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Team & Departments</h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
-            {team.length} team member{team.length !== 1 ? "s" : ""} across {departments.length} department{departments.length !== 1 ? "s" : ""}
+            Showing {filteredTeam.length} of {team.length} team members across {departments.length} departments
           </p>
+        </div>
+
+        {/* Search & Filter Toolbar */}
+        <div className="flex flex-wrap items-center gap-3 px-5 py-4 card-3d rounded-xl"
+          style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+          <div className="relative flex-1 min-w-[200px]">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search team members by name or email..." suppressHydrationWarning
+              className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
+              style={{ backgroundColor: "var(--input-bg)", border: "1px solid var(--input-border)", color: "var(--input-text)" }} />
+          </div>
+          <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg text-xs font-semibold focus:outline-none cursor-pointer"
+            style={{ backgroundColor: "var(--input-bg)", border: "1px solid var(--input-border)", color: "var(--text-muted)" }}>
+            <option value="">All Departments</option>
+            {departments.map(d => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
         </div>
 
         {loading ? (
@@ -85,7 +114,7 @@ export default function TeamPage() {
             {/* Team member cards */}
             <h2 className="text-sm font-semibold pt-2" style={{ color: "var(--text-primary)" }}>Team Members</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {team.map((m) => (
+              {filteredTeam.map((m) => (
                 <div key={m.id} className="card-3d rounded-xl p-5" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -105,7 +134,7 @@ export default function TeamPage() {
                   </div>
                 </div>
               ))}
-              {team.length === 0 && (
+              {filteredTeam.length === 0 && (
                 <div className="col-span-full text-center py-10 text-sm" style={{ color: "var(--text-muted)" }}>No team members found.</div>
               )}
             </div>

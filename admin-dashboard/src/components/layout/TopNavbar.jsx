@@ -180,7 +180,11 @@ export default function TopNavbar({ onMenuToggle, onCollapseToggle, collapsed })
               className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
               style={{ backgroundColor: "var(--input-bg)", border: "1px solid var(--border-color)" }}
             >
-              <CircleUserRound size={22} style={{ color: "var(--text-muted)" }} />
+              {displayUser?.avatarUrl ? (
+                <img src={displayUser.avatarUrl} alt={displayUser.name} className="w-full h-full object-cover" />
+              ) : (
+                <CircleUserRound size={22} style={{ color: "var(--text-muted)" }} />
+              )}
             </div>
             <div className="hidden sm:block text-left">
               <p className="text-xs font-semibold leading-none" style={{ color: "var(--text-primary)" }}>

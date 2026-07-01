@@ -29,6 +29,11 @@ export default function TasksPage() {
   const [projects, setProjects] = useState([]);
   const [assignees, setAssignees] = useState([]);
   
+  // Advanced filters state
+  const [priorityFilter, setPriorityFilter] = useState("");
+  const [projectFilter, setProjectFilter] = useState("");
+  const [assigneeFilter, setAssigneeFilter] = useState("");
+
   const [form, setForm] = useState({ title: "", description: "", priority: "medium", projectId: "", assigneeId: "", dueDate: "", comment: "" });
   const [editForm, setEditForm] = useState({ title: "", description: "", priority: "medium", status: "todo", projectId: "", assigneeId: "", dueDate: "", comment: "" });
   
@@ -44,6 +49,9 @@ export default function TasksPage() {
         limit: 10,
         search: search || undefined,
         status: status !== "all" ? status : undefined,
+        projectId: projectFilter || undefined,
+        assigneeId: assigneeFilter || undefined,
+        priority: priorityFilter || undefined,
         sort,
       });
       const data = await apiFetch(`/tasks${q}`);
@@ -54,7 +62,24 @@ export default function TasksPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, status, sort]);
+  }, [search, status, sort, projectFilter, assigneeFilter, priorityFilter]);
+
+  // Load filter inputs lists once on mount
+  useEffect(() => {
+    async function loadFilters() {
+      try {
+        const [projData, assigneeData] = await Promise.all([
+          apiFetch("/projects?limit=100"),
+          user?.role === "admin" ? apiFetch("/users/managers") : apiFetch("/users/employees"),
+        ]);
+        setProjects(projData.data || []);
+        setAssignees(assigneeData.data || []);
+      } catch {}
+    }
+    if (user) {
+      loadFilters();
+    }
+  }, [user]);
 
   useEffect(() => {
     const timeout = setTimeout(() => fetchTasks(1), 300);
@@ -63,14 +88,6 @@ export default function TasksPage() {
 
   async function openCreateModal() {
     setShowCreate(true);
-    try {
-      const [projData, assigneeData] = await Promise.all([
-        apiFetch("/projects?limit=100"),
-        user?.role === "admin" ? apiFetch("/users/managers") : apiFetch("/users/employees"),
-      ]);
-      setProjects(projData.data || []);
-      setAssignees(assigneeData.data || []);
-    } catch {}
   }
 
   async function handleCreate(e) {
@@ -178,6 +195,38 @@ export default function TasksPage() {
                 className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
                 style={{ backgroundColor: "var(--input-bg)", border: "1px solid var(--input-border)", color: "var(--input-text)" }} />
             </div>
+
+            {/* Advanced Filters */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold focus:outline-none cursor-pointer"
+                style={{ backgroundColor: "var(--input-bg)", border: "1px solid var(--input-border)", color: "var(--text-muted)" }}>
+                <option value="">All Priorities</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+
+              <select value={projectFilter} onChange={e => setProjectFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold focus:outline-none cursor-pointer"
+                style={{ backgroundColor: "var(--input-bg)", border: "1px solid var(--input-border)", color: "var(--text-muted)" }}>
+                <option value="">All Projects</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+
+              <select value={assigneeFilter} onChange={e => setAssigneeFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold focus:outline-none cursor-pointer"
+                style={{ backgroundColor: "var(--input-bg)", border: "1px solid var(--input-border)", color: "var(--text-muted)" }}>
+                <option value="">All Assignees</option>
+                {assignees.map(a => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="flex items-center gap-2 flex-wrap">
               {allStatuses.map(s => (
                 <button key={s} onClick={() => setStatus(s)}

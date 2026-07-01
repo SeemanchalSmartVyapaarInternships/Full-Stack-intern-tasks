@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { User, Mail, ShieldCheck, Save, CheckCircle2, AlertCircle } from "lucide-react";
+import { User, Mail, ShieldCheck, Save, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 const API = "http://localhost:8000/api/users";
 
@@ -10,6 +10,35 @@ export default function SettingsPage() {
   const [name, setName] = useState(user?.name || "");
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function handleAvatarChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setFeedback(null);
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const res = await fetch(`${API}/profile-image`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setFeedback({ type: "error", msg: data.message || "Failed to upload avatar." });
+      } else {
+        updateUser(data.data);
+        setFeedback({ type: "success", msg: "Profile image updated successfully!" });
+      }
+    } catch {
+      setFeedback({ type: "error", msg: "Failed to upload profile picture. Server unreachable." });
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function handleSave(e) {
     e.preventDefault();
@@ -50,17 +79,32 @@ export default function SettingsPage() {
       <div className="card-3d rounded-xl p-6" style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         {/* Avatar row */}
         <div className="flex items-center gap-4 mb-6 pb-6" style={{ borderBottom: "1px solid var(--divider)" }}>
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white"
+          <div className="relative group w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white overflow-hidden shrink-0"
             style={{ backgroundColor: "var(--blue)" }}>
-            {user?.name?.charAt(0)?.toUpperCase() || "U"}
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+            ) : (
+              user?.name?.charAt(0)?.toUpperCase() || "U"
+            )}
+            {uploading && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                <Loader2 size={18} className="animate-spin text-white" />
+              </div>
+            )}
           </div>
           <div>
-            <p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>{user?.name}</p>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{user?.email}</p>
-            <span className="inline-flex mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold capitalize"
-              style={{ backgroundColor: roleBg[user?.role], color: roleColor[user?.role] }}>
-              {user?.role}
-            </span>
+            <p className="text-base font-bold animate-fade-in" style={{ color: "var(--text-primary)" }}>{user?.name}</p>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <label className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white cursor-pointer hover:bg-blue-600 transition-all select-none"
+                style={{ backgroundColor: "var(--blue)" }}>
+                {uploading ? "Uploading..." : "Upload Photo"}
+                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} disabled={uploading} />
+              </label>
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold capitalize"
+                style={{ backgroundColor: roleBg[user?.role], color: roleColor[user?.role] }}>
+                {user?.role}
+              </span>
+            </div>
           </div>
         </div>
 

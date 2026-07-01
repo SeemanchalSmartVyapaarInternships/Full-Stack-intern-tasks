@@ -1,5 +1,7 @@
-const { Project, Department, User, Task, ProjectMember } = require("../models");
+const { Project, Department, User, Task, ProjectMember, UploadHistory } = require("../models");
 const { buildPaginatedQuery, paginatedResponse } = require("../utils/queryHelper");
+const { logActivity } = require("../utils/activityLogger");
+const { uploadToStorage } = require("../utils/uploadService");
 
 // ─── CREATE ─────────────────────────────────────────────────────
 const createProject = async (req, res) => {
@@ -26,6 +28,8 @@ const createProject = async (req, res) => {
       departmentId: departmentId || null,
       ownerId: req.user.id,
     });
+
+    await logActivity(req.user.id, "CREATE_PROJECT", "project", project.id, { name: project.name }, req);
 
     return res.status(201).json({
       success: true,
@@ -115,6 +119,8 @@ const updateProject = async (req, res) => {
 
     await project.save();
 
+    await logActivity(req.user.id, "UPDATE_PROJECT", "project", project.id, { name: project.name, status: project.status }, req);
+
     return res.status(200).json({
       success: true,
       message: "Project updated successfully.",
@@ -134,10 +140,13 @@ const deleteProject = async (req, res) => {
     const project = await Project.findByPk(req.params.id);
     if (!project) return res.status(404).json({ success: false, message: "Project not found." });
 
+    const name = project.name;
     // Cascade: destroy tasks + members first
     await Task.destroy({ where: { projectId: project.id } });
     await ProjectMember.destroy({ where: { projectId: project.id } });
     await project.destroy();
+
+    await logActivity(req.user.id, "DELETE_PROJECT", "project", req.params.id, { name }, req);
 
     return res.status(200).json({ success: true, message: "Project and its tasks deleted successfully." });
   } catch (err) {
@@ -188,4 +197,103 @@ const removeProjectMember = async (req, res) => {
   }
 };
 
-module.exports = { createProject, getAllProjects, getProjectById, updateProject, deleteProject, addProjectMember, removeProjectMember };
+const uploadProjectDocument = async (req, res) => {
+  try {
+    const project = await Project.findByPk(req.params.id);
+    if (!project) return res.status(404).json({ success: false, message: "Project not found." });
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded." });
+    }
+
+    const fileUrl = await uploadToStorage(req.file.path, `projects/${project.id}`);
+
+    const document = await UploadHistory.create({
+      fileName: req.file.originalname,
+      fileUrl: fileUrl,
+      fileSize: req.file.size,
+      mimeType: req.file.mimetype,
+      uploadType: "project_document",
+      userId: req.user.id,
+      projectId: project.id,
+    });
+
+    await logActivity(req.user.id, "UPLOAD_PROJECT_DOCUMENT", "document", document.id, {
+      fileName: req.file.originalname,
+      projectId: project.id,
+      projectName: project.name,
+    }, req);
+
+    return res.status(201).json({
+      success: true,
+      message: "Document uploaded successfully.",
+      data: document,
+    });
+  } catch (err) {
+    console.error("Document upload failed:", err.message);
+    return res.status(500).json({ success: false, message: "Failed to upload document." });
+  }
+};
+
+const getProjectDocuments = async (req, res) => {
+  try {
+    const project = await Project.findByPk(req.params.id);
+    if (!project) return res.status(404).json({ success: false, message: "Project not found." });
+
+    const documents = await UploadHistory.findAll({
+      where: { projectId: project.id, uploadType: "project_document" },
+      include: [{ model: User, as: "uploader", attributes: ["id", "name", "email"] }],
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: documents,
+    });
+  } catch (err) {
+    console.error("Failed to retrieve documents:", err.message);
+    return res.status(500).json({ success: false, message: "Failed to retrieve documents." });
+  }
+};
+
+const deleteProjectDocument = async (req, res) => {
+  try {
+    const document = await UploadHistory.findByPk(req.params.docId);
+    if (!document) return res.status(404).json({ success: false, message: "Document not found." });
+
+    if (req.user.role === "employee" && document.userId !== req.user.id) {
+      return res.status(403).json({ success: false, message: "You can only delete your own documents." });
+    }
+
+    const fileName = document.fileName;
+    const projectId = document.projectId;
+
+    await document.destroy();
+
+    await logActivity(req.user.id, "DELETE_PROJECT_DOCUMENT", "document", req.params.docId, {
+      fileName,
+      projectId,
+    }, req);
+
+    return res.status(200).json({
+      success: true,
+      message: "Document deleted successfully.",
+    });
+  } catch (err) {
+    console.error("Failed to delete document:", err.message);
+    return res.status(500).json({ success: false, message: "Failed to delete document." });
+  }
+};
+
+module.exports = {
+  createProject,
+  getAllProjects,
+  getProjectById,
+  updateProject,
+  deleteProject,
+  addProjectMember,
+  removeProjectMember,
+  uploadProjectDocument,
+  getProjectDocuments,
+  deleteProjectDocument,
+};

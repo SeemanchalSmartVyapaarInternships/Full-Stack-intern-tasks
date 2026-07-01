@@ -1,4 +1,6 @@
-const { User, Department } = require("../models");
+const { User, Department, UploadHistory } = require("../models");
+const { uploadToStorage } = require("../utils/uploadService");
+const { logActivity } = require("../utils/activityLogger");
 
 const getProfile = async (req, res) => {
   try {
@@ -148,4 +150,46 @@ const updateUserRole = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, getAllUsers, getTeam, getManagers, getEmployees, updateProfile, updateUserRole };
+const uploadProfileImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded." });
+    }
+
+    const fileUrl = await uploadToStorage(req.file.path, "avatars");
+
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+    user.avatarUrl = fileUrl;
+    await user.save();
+
+    await UploadHistory.create({
+      fileName: req.file.originalname,
+      fileUrl: fileUrl,
+      fileSize: req.file.size,
+      mimeType: req.file.mimetype,
+      uploadType: "profile_image",
+      userId: req.user.id,
+    });
+
+    await logActivity(req.user.id, "UPLOAD_PROFILE_IMAGE", "user", req.user.id, { fileName: req.file.originalname, fileUrl }, req);
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile image uploaded successfully.",
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatarUrl: user.avatarUrl,
+      },
+    });
+  } catch (err) {
+    console.error("Profile image upload failed:", err.message);
+    return res.status(500).json({ success: false, message: "Failed to upload profile image." });
+  }
+};
+
+module.exports = { getProfile, getAllUsers, getTeam, getManagers, getEmployees, updateProfile, updateUserRole, uploadProfileImage };

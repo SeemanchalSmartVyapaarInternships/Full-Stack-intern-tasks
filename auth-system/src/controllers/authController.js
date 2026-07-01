@@ -2,8 +2,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { OAuth2Client } = require("google-auth-library");
-const User = require("../models/User");
-const Otp = require("../models/Otp");
+const { User, Otp, LoginHistory } = require("../models");
+const { logActivity } = require("../utils/activityLogger");
 const nodemailer = require("nodemailer");
 const googleClient = new OAuth2Client();
 
@@ -81,6 +81,15 @@ const login = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
+      await LoginHistory.create({
+        email,
+        ipAddress: req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+        userAgent: req.headers["user-agent"],
+        status: "failed",
+        failureReason: "User not found",
+      });
+      await logActivity(null, "LOGIN_FAILED", "auth", null, { email, reason: "User not found" }, req);
+
       return res.status(401).json({
         success: false,
         message: "Invalid email or password.",
@@ -89,6 +98,16 @@ const login = async (req, res) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      await LoginHistory.create({
+        userId: user.id,
+        email,
+        ipAddress: req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+        userAgent: req.headers["user-agent"],
+        status: "failed",
+        failureReason: "Incorrect password",
+      });
+      await logActivity(user.id, "LOGIN_FAILED", "auth", user.id, { email, reason: "Incorrect password" }, req);
+
       return res.status(401).json({
         success: false,
         message: "Invalid email or password.",
@@ -96,10 +115,19 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, name: user.name, email: user.email, role: user.role },
+      { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
+
+    await LoginHistory.create({
+      userId: user.id,
+      email,
+      ipAddress: req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+      userAgent: req.headers["user-agent"],
+      status: "success",
+    });
+    await logActivity(user.id, "LOGIN_SUCCESS", "auth", user.id, { email }, req);
 
     return res.status(200).json({
       success: true,
@@ -111,6 +139,7 @@ const login = async (req, res) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          avatarUrl: user.avatarUrl,
         },
       },
     });
@@ -136,6 +165,15 @@ const googleAuth = async (req, res) => {
     const googleUser = await response.json();
 
     if (!googleUser.email) {
+      await LoginHistory.create({
+        email: "unknown-google",
+        ipAddress: req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+        userAgent: req.headers["user-agent"],
+        status: "failed",
+        failureReason: "Failed to get user email from Google",
+      });
+      await logActivity(null, "LOGIN_FAILED", "auth", null, { reason: "Failed to get user email from Google" }, req);
+
       return res.status(401).json({ success: false, message: "Failed to get user info from Google." });
     }
 
@@ -148,21 +186,31 @@ const googleAuth = async (req, res) => {
         email: googleUser.email,
         password: randomPassword,
         role: "employee",
+        avatarUrl: googleUser.picture || null, // Auto sync google profile picture
       });
     }
 
     const token = jwt.sign(
-      { id: user.id, name: user.name, email: user.email, role: user.role },
+      { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
+
+    await LoginHistory.create({
+      userId: user.id,
+      email: user.email,
+      ipAddress: req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+      userAgent: req.headers["user-agent"],
+      status: "success",
+    });
+    await logActivity(user.id, "LOGIN_SUCCESS", "auth", user.id, { email: user.email, method: "Google" }, req);
 
     return res.status(200).json({
       success: true,
       message: "Google login successful.",
       data: {
         accessToken: token,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+        user: { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl },
       },
     });
   } catch (err) {

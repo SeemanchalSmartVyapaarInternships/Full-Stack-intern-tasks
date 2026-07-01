@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { CloseIcon } from "@/components/ui/Icons";
 import {
   LayoutDashboard, Users, FolderKanban, ListTodo, Users2,
-  BarChart2, FileText, Settings, HelpCircle, Building2,
+  BarChart2, FileText, Settings, HelpCircle, Building2, History,
 } from "lucide-react";
 
 const allNavLinks = [
@@ -19,6 +19,7 @@ const allNavLinks = [
   { id: "projects",  label: "Projects",   icon: FolderKanban,    href: "/dashboard/projects",  roles: ["admin","manager","employee"] },
   { id: "tasks",     label: "Tasks",      icon: ListTodo,        href: "/dashboard/tasks",     roles: ["admin","manager"] },
   { id: "reports",   label: "Reports",    icon: FileText,        href: "/dashboard/reports",   roles: ["admin","manager"] },
+  { id: "activity",  label: "Activity Logs", icon: History,       href: "/dashboard/activity",  roles: ["admin","manager"] },
   { id: "settings",  label: "Settings",   icon: Settings,        href: "/dashboard/settings",  roles: ["admin","manager","employee"] },
   { id: "support",   label: "Support",    icon: HelpCircle,      href: "/dashboard/support",   roles: ["admin","manager","employee"] },
 ];
@@ -121,9 +122,13 @@ export default function Sidebar({ isOpen, onClose, collapsed, mobileOnly }) {
       {!collapsed && (
         <div className="px-4 py-3" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white overflow-hidden shrink-0"
               style={{ backgroundColor: "var(--blue)" }}>
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                user?.name?.charAt(0)?.toUpperCase() || "U"
+              )}
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold truncate text-white">{user?.name || "User"}</p>

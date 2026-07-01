@@ -7,9 +7,13 @@ const {
   deleteProject,
   addProjectMember,
   removeProjectMember,
+  uploadProjectDocument,
+  getProjectDocuments,
+  deleteProjectDocument,
 } = require("../controllers/projectController");
 const auth = require("../middleware/auth");
 const authorize = require("../middleware/rbac");
+const { upload } = require("../utils/uploadService");
 
 const router = express.Router();
 
@@ -22,5 +26,10 @@ router.delete("/:id", auth, authorize("admin"), deleteProject);
 // Member management
 router.post("/:id/members", auth, authorize("admin", "manager"), addProjectMember);
 router.delete("/:id/members/:userId", auth, authorize("admin", "manager"), removeProjectMember);
+
+// Project Documents
+router.post("/:id/documents", auth, upload.single("document"), uploadProjectDocument);
+router.get("/:id/documents", auth, getProjectDocuments);
+router.delete("/documents/:docId", auth, deleteProjectDocument);
 
 module.exports = router;

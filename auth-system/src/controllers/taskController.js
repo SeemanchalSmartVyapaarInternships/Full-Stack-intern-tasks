@@ -1,4 +1,5 @@
-const { Task, Project, User } = require("../models");
+const { Task, Project, User, TaskUpdate } = require("../models");
+const { logActivity } = require("../utils/activityLogger");
 const { buildPaginatedQuery, paginatedResponse } = require("../utils/queryHelper");
 
 const createTask = async (req, res) => {
@@ -30,6 +31,8 @@ const createTask = async (req, res) => {
       assigneeId: assigneeId || null,
       comment: comment?.trim() || null,
     });
+
+    await logActivity(req.user.id, "CREATE_TASK", "task", task.id, { title: task.title, projectId: task.projectId }, req);
 
     return res.status(201).json({
       success: true,
@@ -101,6 +104,9 @@ const updateTask = async (req, res) => {
       return res.status(403).json({ success: false, message: "You can only update tasks assigned to you." });
     }
 
+    const previousStatus = task.status;
+    const previousAssigneeId = task.assigneeId;
+
     if (projectId !== undefined) {
       if (projectId) {
         const project = await Project.findByPk(projectId);
@@ -124,7 +130,30 @@ const updateTask = async (req, res) => {
     if (dueDate !== undefined) task.dueDate = dueDate || null;
     if (comment !== undefined) task.comment = comment?.trim() || null;
 
+    const statusChanged = status !== undefined && status !== previousStatus;
+    const assigneeChanged = assigneeId !== undefined && assigneeId !== previousAssigneeId;
+
+    if (statusChanged || assigneeChanged || comment) {
+      await TaskUpdate.create({
+        taskId: task.id,
+        userId: req.user.id,
+        previousStatus: statusChanged ? previousStatus : null,
+        newStatus: statusChanged ? task.status : null,
+        previousAssigneeId: assigneeChanged ? previousAssigneeId : null,
+        newAssigneeId: assigneeChanged ? task.assigneeId : null,
+        comment: comment?.trim() || null,
+      });
+    }
+
     await task.save();
+
+    await logActivity(req.user.id, "UPDATE_TASK", "task", task.id, {
+      title: task.title,
+      statusChanged,
+      assigneeChanged,
+      newStatus: task.status,
+      comment: comment || undefined,
+    }, req);
 
     return res.status(200).json({
       success: true,
@@ -144,7 +173,11 @@ const deleteTask = async (req, res) => {
     const task = await Task.findByPk(req.params.id);
     if (!task) return res.status(404).json({ success: false, message: "Task not found." });
 
+    const title = task.title;
+    const projectId = task.projectId;
     await task.destroy();
+
+    await logActivity(req.user.id, "DELETE_TASK", "task", req.params.id, { title, projectId }, req);
 
     return res.status(200).json({ success: true, message: "Task deleted successfully." });
   } catch (err) {
