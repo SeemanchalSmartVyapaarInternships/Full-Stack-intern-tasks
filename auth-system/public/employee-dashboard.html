@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auth System — Employee Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css?v=3" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>" />
+</head>
+<body>
+
+  <!-- Animated Background -->
+  <div class="animated-bg">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+  </div>
+  <div class="grid-lines"></div>
+
+  <!-- Page Loader -->
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-ring"></div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Mobile Toggle -->
+  <button class="mobile-toggle" id="mobileToggle">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Dashboard Layout -->
+  <div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <span class="brand-icon">🔐</span>
+          <span>Auth System</span>
+        </div>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="user-info-card">
+          <div class="user-avatar" id="sidebarAvatar">—</div>
+          <div class="user-details">
+            <div class="user-name" id="sidebarName">Loading...</div>
+            <div class="user-email-text" id="sidebarEmail">—</div>
+          </div>
+        </div>
+        <span class="role-badge" id="sidebarRoleBadge">—</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Navigation</div>
+        <a href="#" class="nav-link active" data-section="overview">
+          <span class="nav-icon">📊</span>
+          <span>Overview</span>
+        </a>
+        <a href="#" class="nav-link" data-section="tasks">
+          <span class="nav-icon">📋</span>
+          <span>My Tasks</span>
+        </a>
+        <a href="#" class="nav-link" data-section="profile">
+          <span class="nav-icon">👤</span>
+          <span>Profile</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="logoutBtn">
+          <span>🚪</span>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Dashboard Header -->
+      <div class="dash-header">
+        <div class="dash-header-left">
+          <h1><span class="wave">👋</span> Welcome back, <span id="headerName">Employee</span></h1>
+          <p id="headerSubtitle">Team Member Dashboard</p>
+        </div>
+        <div class="header-avatar" id="headerAvatar">—</div>
+      </div>
+
+      <!-- ===== OVERVIEW SECTION ===== -->
+      <section class="content-section active" id="sectionOverview">
+        <div class="section-title">
+          <span class="title-icon">📊</span> Overview
+        </div>
+        <div class="stats-grid" id="overviewStats">
+          <div class="stat-card purple">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">8</div>
+            <div class="stat-label">Tasks Assigned</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">5</div>
+            <div class="stat-label">Completed</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value">3</div>
+            <div class="stat-label">Pending</div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">🚀 Getting Started</h3>
+          <p style="font-size:14px; color:var(--text-secondary); line-height:1.7;">
+            Welcome to your Employee Dashboard. Check your assigned tasks, view team announcements, 
+            and keep your profile up to date. Use the sidebar to navigate between sections.
+          </p>
+        </div>
+      </section>
+
+      <!-- ===== MY TASKS SECTION ===== -->
+      <section class="content-section" id="sectionTasks">
+        <div class="section-title">
+          <span class="title-icon">📋</span> My Tasks
+        </div>
+        <div class="glass-card" id="employeeDashContent">
+          <div class="empty-state">
+            <div class="empty-icon">⏳</div>
+            <p>Loading dashboard data...</p>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:32px;">
+          <span class="title-icon">📢</span> Announcements
+        </div>
+        <div id="announcementsContainer">
+          <div class="announcement-item">
+            <h4>🎉 Welcome to the Team!</h4>
+            <p>We're thrilled to have you on board. Check out the dashboard for your latest updates and tasks.</p>
+            <div class="announcement-date">July 1, 2026</div>
+          </div>
+          <div class="announcement-item">
+            <h4>🔒 Security Reminder</h4>
+            <p>Please ensure your passwords are strong and unique. Enable two-factor authentication for added security.</p>
+            <div class="announcement-date">June 28, 2026</div>
+          </div>
+          <div class="announcement-item">
+            <h4>📅 Upcoming Town Hall</h4>
+            <p>Join us for our quarterly town hall meeting this Friday at 3:00 PM. All employees are encouraged to attend.</p>
+            <div class="announcement-date">June 25, 2026</div>
+          </div>
+          <div class="announcement-item">
+            <h4>🌟 Performance Reviews</h4>
+            <p>Annual performance reviews will begin next month. Please prepare your self-assessment documents.</p>
+            <div class="announcement-date">June 20, 2026</div>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:32px;">
+          <span class="title-icon">📌</span> Task List
+        </div>
+        <div class="glass-card" id="staticTaskList">
+          <div style="padding:12px 16px; background:rgba(0,0,0,0.015); border:1px solid var(--glass-border); border-radius:8px; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:16px;">✅</span>
+            <span style="font-size:13px; color:var(--text-primary); text-decoration:line-through; opacity:0.6;">Complete onboarding documentation</span>
+          </div>
+          <div style="padding:12px 16px; background:rgba(0,0,0,0.015); border:1px solid var(--glass-border); border-radius:8px; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:16px;">✅</span>
+            <span style="font-size:13px; color:var(--text-primary); text-decoration:line-through; opacity:0.6;">Set up development environment</span>
+          </div>
+          <div style="padding:12px 16px; background:rgba(0,0,0,0.015); border:1px solid var(--glass-border); border-radius:8px; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:16px;">✅</span>
+            <span style="font-size:13px; color:var(--text-primary); text-decoration:line-through; opacity:0.6;">Review team coding standards</span>
+          </div>
+          <div style="padding:12px 16px; background:rgba(0,0,0,0.015); border:1px solid var(--glass-border); border-radius:8px; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:16px;">✅</span>
+            <span style="font-size:13px; color:var(--text-primary); text-decoration:line-through; opacity:0.6;">Complete security training module</span>
+          </div>
+          <div style="padding:12px 16px; background:rgba(0,0,0,0.015); border:1px solid var(--glass-border); border-radius:8px; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:16px;">✅</span>
+            <span style="font-size:13px; color:var(--text-primary); text-decoration:line-through; opacity:0.6;">Submit timesheet for Week 1</span>
+          </div>
+          <div style="padding:12px 16px; background:rgba(255,107,0,0.04); border:1px solid rgba(255,107,0,0.15); border-radius:8px; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:16px;">🔄</span>
+            <span style="font-size:13px; color:var(--text-primary); font-weight:600;">Build dashboard UI components</span>
+          </div>
+          <div style="padding:12px 16px; background:rgba(255,107,0,0.04); border:1px solid rgba(255,107,0,0.15); border-radius:8px; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:16px;">🔄</span>
+            <span style="font-size:13px; color:var(--text-primary); font-weight:600;">Write unit tests for auth module</span>
+          </div>
+          <div style="padding:12px 16px; background:rgba(0,0,0,0.015); border:1px solid var(--glass-border); border-radius:8px; margin-bottom:0; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:16px;">⏳</span>
+            <span style="font-size:13px; color:var(--text-secondary);">Prepare sprint demo presentation</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PROFILE SECTION ===== -->
+      <section class="content-section" id="sectionProfile">
+        <div class="section-title">
+          <span class="title-icon">👤</span> My Profile
+        </div>
+        <div class="glass-card">
+          <div class="profile-grid" id="profileGrid">
+            <div class="profile-field">
+              <div class="field-label">Full Name</div>
+              <div class="field-value" id="profileName">—</div>
+            </div>
+            <div class="profile-field">
+              <div class="field-label">Email</div>
+              <div class="field-value" id="profileEmail">—</div>
+            </div>
+            <div class="profile-field">
+              <div class="field-label">Role</div>
+              <div class="field-value" id="profileRole">—</div>
+            </div>
+            <div class="profile-field">
+              <div class="field-label">User ID</div>
+              <div class="field-value" id="profileId">—</div>
+            </div>
+            <div class="profile-field">
+              <div class="field-label">Account Created</div>
+              <div class="field-value" id="profileCreated">—</div>
+            </div>
+            <div class="profile-field">
+              <div class="field-label">Status</div>
+              <div class="field-value">✅ Active</div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card" style="margin-top: 24px;">
+          <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">✏️ Update Name</h3>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+            <input type="text" id="editNameInput" placeholder="Enter new name"
+              style="flex:1; min-width:200px; padding:12px 16px; background:rgba(0,0,0,0.02); border:1px solid var(--glass-border); border-radius:var(--radius-md); color:var(--text-primary); font-size:14px; outline:none; transition:all var(--transition-fast); font-family:inherit;" />
+            <button class="btn-action btn-save" id="updateNameBtn" style="padding:12px 24px; font-size:14px;">
+              💾 Update
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/employee-dashboard.js"></script>
+</body>
+</html>
