@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auth System — Admin Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css?v=3" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>" />
+</head>
+<body>
+
+  <!-- Animated Background -->
+  <div class="animated-bg">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+  </div>
+  <div class="grid-lines"></div>
+
+  <!-- Page Loader -->
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-ring"></div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Confirm Modal -->
+  <div id="confirmModal"></div>
+
+  <!-- Mobile Toggle -->
+  <button class="mobile-toggle" id="mobileToggle">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Dashboard Layout -->
+  <div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <span class="brand-icon">🔐</span>
+          <span>Auth System</span>
+        </div>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="user-info-card">
+          <div class="user-avatar" id="sidebarAvatar">—</div>
+          <div class="user-details">
+            <div class="user-name" id="sidebarName">Loading...</div>
+            <div class="user-email-text" id="sidebarEmail">—</div>
+          </div>
+        </div>
+        <span class="role-badge" id="sidebarRoleBadge">—</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Navigation</div>
+        <a href="#" class="nav-link active" data-section="overview">
+          <span class="nav-icon">📊</span>
+          <span>Overview</span>
+        </a>
+        <a href="#" class="nav-link" data-section="users">
+          <span class="nav-icon">👥</span>
+          <span>User Management</span>
+        </a>
+        <a href="#" class="nav-link" data-section="profile">
+          <span class="nav-icon">👤</span>
+          <span>Profile</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="logoutBtn">
+          <span>🚪</span>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Dashboard Header -->
+      <div class="dash-header">
+        <div class="dash-header-left">
+          <h1><span class="wave">👋</span> Welcome back, <span id="headerName">Admin</span></h1>
+          <p id="headerSubtitle">System Administrator Dashboard</p>
+        </div>
+        <div class="header-avatar" id="headerAvatar">—</div>
+      </div>
+
+      <!-- ===== OVERVIEW SECTION ===== -->
+      <section class="content-section active" id="sectionOverview">
+        <div class="section-title">
+          <span class="title-icon">📊</span> Overview
+        </div>
+        <div class="stats-grid" id="overviewStats">
+          <div class="stat-card purple">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="statTotalUsers">0</div>
+            <div class="stat-label">Total Users</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-icon">🛡️</div>
+            <div class="stat-value" id="statAdmins">0</div>
+            <div class="stat-label">Admins</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value" id="statManagers">0</div>
+            <div class="stat-label">Managers</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-icon">👤</div>
+            <div class="stat-value" id="statEmployees">0</div>
+            <div class="stat-label">Employees</div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;">🛡️ Administrator Panel</h3>
+          <p style="font-size:14px; color:var(--text-secondary); line-height:1.7;">
+            Welcome to the Admin Dashboard. You have full control over the system — manage users, 
+            change roles, and monitor platform activity. Use the sidebar to navigate between sections.
+          </p>
+        </div>
+      </section>
+
+      <!-- ===== USER MANAGEMENT SECTION ===== -->
+      <section class="content-section" id="sectionUsers">
+        <div class="section-title">
+          <span class="title-icon">👥</span> User Management
+        </div>
+        <div class="glass-card">
+          <div class="table-container">
+            <table class="data-table" id="usersTable">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr>
+                  <td colspan="5">
+                    <div class="empty-state">
+                      <div class="empty-icon">⏳</div>
+                      <p>Loading users...</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PROFILE SECTION ===== -->
+      <section class="content-section" id="sectionProfile">
+        <div class="section-title">
+          <span class="title-icon">👤</span> My Profile
+        </div>
+        <div class="glass-card">
+          <div class="profile-grid" id="profileGrid">
+            <div class="profile-field">
+              <div class="field-label">Full Name</div>
+              <div class="field-value" id="profileName">—</div>
+            </div>
+            <div class="profile-field">
+              <div class="field-label">Email</div>
+              <div class="field-value" id="profileEmail">—</div>
+            </div>
+            <div class="profile-field">
+              <div class="field-label">Role</div>
+              <div class="field-value" id="profileRole">—</div>
+            </div>
+            <div class="profile-field">
+              <div class="field-label">User ID</div>
+              <div class="field-value" id="profileId">—</div>
+            </div>
+            <div class="profile-field">
+              <div class="field-label">Account Created</div>
+              <div class="field-value" id="profileCreated">—</div>
+            </div>
+            <div class="profile-field">
+              <div class="field-label">Status</div>
+              <div class="field-value">✅ Active</div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card" style="margin-top: 24px;">
+          <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">✏️ Update Name</h3>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+            <input type="text" id="editNameInput" placeholder="Enter new name"
+              style="flex:1; min-width:200px; padding:12px 16px; background:rgba(0,0,0,0.02); border:1px solid var(--glass-border); border-radius:var(--radius-md); color:var(--text-primary); font-size:14px; outline:none; transition:all var(--transition-fast); font-family:inherit;" />
+            <button class="btn-action btn-save" id="updateNameBtn" style="padding:12px 24px; font-size:14px;">
+              💾 Update
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/admin-dashboard.js"></script>
+</body>
+</html>

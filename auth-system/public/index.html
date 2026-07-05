@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auth System — Secure Login</title>
+  <link rel="stylesheet" href="css/styles.css?v=4" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>" />
+</head>
+<body>
+
+  <!-- Animated Background -->
+  <div class="animated-bg">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+  </div>
+  <div class="grid-lines"></div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Auth Page -->
+  <main class="auth-page">
+    <div class="auth-card">
+
+      <!-- Holographic Sheen Overlay -->
+      <div class="holo-sheen"></div>
+
+      <!-- Brand -->
+      <div class="auth-brand">
+        <span class="logo-icon">🔐</span>
+        <h1>Auth System</h1>
+        <p>Secure access to your dashboard</p>
+      </div>
+
+      <!-- ===== LOGIN / REGISTER TABS ===== -->
+      <div id="authTabsSection">
+
+        <!-- Tab Switcher -->
+        <div class="tab-switcher">
+          <div class="tab-slider" id="tabSlider"></div>
+          <button class="tab-btn active" data-tab="login" id="loginTab">Login</button>
+          <button class="tab-btn" data-tab="register" id="registerTab">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form class="auth-form active" id="loginForm" autocomplete="off">
+          <div class="form-group">
+            <label for="loginEmail">Email Address</label>
+            <div class="input-wrapper">
+              <span class="input-icon">✉</span>
+              <input type="email" id="loginEmail" placeholder="you@example.com" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="loginPassword" placeholder="Enter your password" required />
+              <button type="button" class="password-toggle" data-target="loginPassword" aria-label="Toggle password visibility">👁</button>
+            </div>
+          </div>
+
+          <div class="forgot-link-row">
+            <button type="button" class="forgot-link" id="forgotPasswordLink">Forgot Password?</button>
+          </div>
+
+          <button type="submit" class="btn-submit" id="loginBtn">
+            <span>
+              <span class="btn-text">Sign In</span>
+              <span class="spinner"></span>
+            </span>
+          </button>
+
+          <div class="divider">
+            <span>or</span>
+          </div>
+
+          <button type="button" class="btn-google" id="googleSignInBtn">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+            <span>Continue with Google</span>
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form class="auth-form" id="registerForm" autocomplete="off">
+          <div class="form-group">
+            <label for="regName">Full Name</label>
+            <div class="input-wrapper">
+              <span class="input-icon">👤</span>
+              <input type="text" id="regName" placeholder="John Doe" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="regEmail">Email Address</label>
+            <div class="input-wrapper">
+              <span class="input-icon">✉</span>
+              <input type="email" id="regEmail" placeholder="you@example.com" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="regPassword">Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="regPassword" placeholder="Create a strong password" required />
+              <button type="button" class="password-toggle" data-target="regPassword" aria-label="Toggle password visibility">👁</button>
+            </div>
+            <div class="password-strength" id="passwordStrength">
+              <div class="strength-bar-track">
+                <div class="strength-bar-fill" id="strengthBarFill"></div>
+              </div>
+              <div class="strength-label" id="strengthLabel"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="regConfirmPassword">Confirm Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required />
+              <button type="button" class="password-toggle" data-target="regConfirmPassword" aria-label="Toggle password visibility">👁</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="registerBtn">
+            <span>
+              <span class="btn-text">Create Account</span>
+              <span class="spinner"></span>
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <!-- ===== FORGOT PASSWORD SECTION (3-step flow) ===== -->
+      <div id="forgotSection" style="display: none;">
+
+        <!-- Step 1: Enter Email -->
+        <div class="forgot-step active" id="forgotStep1">
+          <div class="forgot-header">
+            <button type="button" class="back-btn" id="backToLogin">← Back to Login</button>
+            <h2>Forgot Password</h2>
+            <p>Enter your email to receive a verification code</p>
+          </div>
+          <form id="forgotEmailForm">
+            <div class="form-group">
+              <label for="forgotEmail">Email Address</label>
+              <div class="input-wrapper">
+                <span class="input-icon">✉</span>
+                <input type="email" id="forgotEmail" placeholder="you@example.com" required />
+              </div>
+            </div>
+            <button type="submit" class="btn-submit" id="sendOtpBtn">
+              <span>
+                <span class="btn-text">Send OTP</span>
+                <span class="spinner"></span>
+              </span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Step 2: Enter OTP -->
+        <div class="forgot-step" id="forgotStep2">
+          <div class="forgot-header">
+            <button type="button" class="back-btn" id="backToStep1">← Back</button>
+            <h2>Verify Code</h2>
+            <p>Enter the 6-digit code sent to <strong id="otpEmailDisplay"></strong></p>
+          </div>
+          <form id="verifyOtpForm">
+            <div class="form-group">
+              <label for="otpInput">Verification Code</label>
+              <div class="otp-input-group" id="otpInputGroup">
+                <input type="text" maxlength="1" class="otp-box" data-index="0" autocomplete="off" />
+                <input type="text" maxlength="1" class="otp-box" data-index="1" autocomplete="off" />
+                <input type="text" maxlength="1" class="otp-box" data-index="2" autocomplete="off" />
+                <input type="text" maxlength="1" class="otp-box" data-index="3" autocomplete="off" />
+                <input type="text" maxlength="1" class="otp-box" data-index="4" autocomplete="off" />
+                <input type="text" maxlength="1" class="otp-box" data-index="5" autocomplete="off" />
+              </div>
+            </div>
+            <button type="submit" class="btn-submit" id="verifyOtpBtn">
+              <span>
+                <span class="btn-text">Verify OTP</span>
+                <span class="spinner"></span>
+              </span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Step 3: New Password -->
+        <div class="forgot-step" id="forgotStep3">
+          <div class="forgot-header">
+            <h2>Reset Password</h2>
+            <p>Create a new secure password</p>
+          </div>
+          <form id="resetPasswordForm">
+            <div class="form-group">
+              <label for="newPassword">New Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="newPassword" placeholder="Enter new password" required />
+                <button type="button" class="password-toggle" data-target="newPassword" aria-label="Toggle password">👁</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="confirmNewPassword">Confirm Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="confirmNewPassword" placeholder="Confirm new password" required />
+                <button type="button" class="password-toggle" data-target="confirmNewPassword" aria-label="Toggle password">👁</button>
+              </div>
+            </div>
+            <button type="submit" class="btn-submit" id="resetPasswordBtn">
+              <span>
+                <span class="btn-text">Reset Password</span>
+                <span class="spinner"></span>
+              </span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/auth.js?v=4"></script>
+</body>
+</html>
