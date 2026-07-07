@@ -58,6 +58,17 @@ const User = sequelize.define(
         },
       },
     },
+
+    department_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'departments',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+    },
   },
   {
     // ---- Hooks ----

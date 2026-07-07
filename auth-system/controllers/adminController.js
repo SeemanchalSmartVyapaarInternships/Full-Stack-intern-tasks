@@ -94,4 +94,53 @@ async function deleteUser(req, res) {
   }
 }
 
-module.exports = { listUsers, updateUserRole, deleteUser };
+/**
+ * PUT /api/admin/users/:id
+ * Update user details (admin-only).
+ */
+async function updateUser(req, res) {
+  try {
+    const { id } = req.params;
+    const { name, role, department_id } = req.body;
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      return errorResponse(res, 404, 'User not found.');
+    }
+
+    if (role && role !== user.role) {
+      // Prevent admin from demoting themselves
+      if (parseInt(id, 10) === req.user.id && role !== 'admin') {
+        return errorResponse(res, 400, 'You cannot change your own admin role.');
+      }
+      user.role = role;
+    }
+
+    if (department_id !== undefined) {
+      if (department_id !== null) {
+        const { Department } = require('../models');
+        const dept = await Department.findByPk(department_id);
+        if (!dept) {
+          return errorResponse(res, 400, 'Invalid department_id. Department does not exist.');
+        }
+      }
+      user.department_id = department_id;
+    }
+
+    if (name) user.name = name;
+
+    await user.save();
+
+    return successResponse(res, 200, 'User updated successfully.', {
+      user: sanitiseUser(user),
+    });
+  } catch (err) {
+    console.error('Update User Error:', err);
+    if (err.name === 'SequelizeValidationError') {
+      return errorResponse(res, 400, err.errors[0].message);
+    }
+    return errorResponse(res, 500, 'Internal server error.');
+  }
+}
+
+module.exports = { listUsers, updateUserRole, deleteUser, updateUser };
