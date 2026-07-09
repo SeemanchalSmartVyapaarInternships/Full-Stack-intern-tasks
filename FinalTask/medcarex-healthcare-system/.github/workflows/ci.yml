@@ -1,0 +1,42 @@
+name: MedCareX CI
+
+on:
+  push:
+    branches: ["feature/medcarex-healthcare-system", "main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: FinalTask/medcarex-healthcare-system/package-lock.json
+      - name: Install dependencies
+        working-directory: FinalTask/medcarex-healthcare-system
+        run: npm install
+      - name: Run backend tests
+        working-directory: FinalTask/medcarex-healthcare-system
+        run: npm run test
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: FinalTask/medcarex-healthcare-system/package-lock.json
+      - name: Install dependencies
+        working-directory: FinalTask/medcarex-healthcare-system
+        run: npm install
+      - name: Build frontend
+        working-directory: FinalTask/medcarex-healthcare-system
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000/api
+        run: npm run build
