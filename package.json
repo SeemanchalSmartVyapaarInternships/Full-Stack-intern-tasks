@@ -1,0 +1,19 @@
+{
+  "name": "ssc-auth-rbac-system",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Week 2: Enterprise Authentication & RBAC System with Express.js, JWT, and bcrypt.",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3"
+  }
+}
