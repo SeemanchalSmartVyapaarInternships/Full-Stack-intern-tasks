@@ -1,0 +1,13 @@
+{
+  "name": "medcarex-healthcare-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Weeks 5-6 Final Project: MedCareX Healthcare Full-Stack MVP.",
+  "scripts": {
+    "test:backend": "npm --prefix backend test",
+    "build:frontend": "npm --prefix frontend run build",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "start:backend": "npm --prefix backend start",
+    "start:frontend": "npm --prefix frontend start"
+  }
+}
