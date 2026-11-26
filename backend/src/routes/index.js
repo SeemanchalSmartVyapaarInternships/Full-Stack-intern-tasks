@@ -19,10 +19,17 @@ export function createMedcarexRouter(models) {
   router.get('/activity', ctrl.listActivity);
 
   router.get('/departments', ctrl.listDepartments);
+  router.post('/departments', authorizeRoles('Admin', 'Manager'), ctrl.createDepartment);
+  router.put('/departments/:id', authorizeRoles('Admin', 'Manager'), ctrl.updateDepartment);
+  router.delete('/departments/:id', authorizeRoles('Admin'), ctrl.deleteDepartment);
+
   router.get('/doctors', ctrl.listDoctors);
   router.post('/doctors', authorizeRoles('Admin', 'Manager'), ctrl.createDoctor);
+  router.put('/doctors/:id', authorizeRoles('Admin', 'Manager'), ctrl.updateDoctor);
+  router.delete('/doctors/:id', authorizeRoles('Admin'), ctrl.deleteDoctor);
 
   router.get('/patients', ctrl.listPatients);
+  router.get('/patients/:id', ctrl.getPatient);
   router.post('/patients', authorizeRoles('Admin', 'Manager', 'Employee'), ctrl.createPatient);
   router.put('/patients/:id', authorizeRoles('Admin', 'Manager', 'Employee'), ctrl.updatePatient);
   router.delete('/patients/:id', authorizeRoles('Admin'), ctrl.deletePatient);

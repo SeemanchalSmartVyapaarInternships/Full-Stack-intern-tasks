@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken';
 import { Op } from 'sequelize';
 import { JWT_EXPIRES_IN, JWT_SECRET } from '../middleware/auth.js';
 
+const ALLOWED_ROLES = ['Admin', 'Manager', 'Employee'];
+const ALLOWED_APPOINTMENT_STATUSES = ['Scheduled', 'Completed', 'Cancelled'];
+
 export function createMedcarexController(models) {
   const { User, Department, Doctor, Patient, Appointment, ActivityLog } = models;
 
@@ -26,6 +29,12 @@ export function createMedcarexController(models) {
         return res.status(400).json({
           success: false,
           message: 'Name, email, and password (min 8 chars) are required.',
+        });
+      }
+      if (!ALLOWED_ROLES.includes(role)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid role. Allowed: ${ALLOWED_ROLES.join(', ')}.`,
         });
       }
       const normalizedEmail = String(email).trim().toLowerCase();
@@ -127,11 +136,34 @@ export function createMedcarexController(models) {
     }
   };
 
+  const getPatient = async (req, res, next) => {
+    try {
+      const patient = await Patient.findByPk(req.params.id, {
+        include: [{ model: Doctor, as: 'primaryDoctor', attributes: ['id', 'name', 'specialization'] }],
+      });
+      if (!patient) return res.status(404).json({ success: false, message: 'Patient not found.' });
+      return res.json({ success: true, data: patient });
+    } catch (err) {
+      return next(err);
+    }
+  };
+
   const updatePatient = async (req, res, next) => {
     try {
       const patient = await Patient.findByPk(req.params.id);
       if (!patient) return res.status(404).json({ success: false, message: 'Patient not found.' });
-      await patient.update(req.body || {});
+      const { fullName, age, gender, phone, bloodGroup, notes, primaryDoctorId } = req.body || {};
+      await patient.update({
+        ...(fullName !== undefined ? { fullName: String(fullName).trim() } : {}),
+        ...(age !== undefined && age !== '' ? { age: Number(age) } : {}),
+        ...(gender !== undefined ? { gender } : {}),
+        ...(phone !== undefined ? { phone: String(phone).trim() } : {}),
+        ...(bloodGroup !== undefined ? { bloodGroup: bloodGroup || null } : {}),
+        ...(notes !== undefined ? { notes: notes || null } : {}),
+        ...(primaryDoctorId !== undefined
+          ? { primaryDoctorId: primaryDoctorId ? Number(primaryDoctorId) : null }
+          : {}),
+      });
       await logEvent(req, 'Updated patient record', `${patient.fullName} (#${patient.id})`);
       const full = await Patient.findByPk(patient.id, {
         include: [{ model: Doctor, as: 'primaryDoctor', attributes: ['id', 'name', 'specialization'] }],
@@ -168,6 +200,59 @@ export function createMedcarexController(models) {
     }
   };
 
+  const createDepartment = async (req, res, next) => {
+    try {
+      const { name, floor } = req.body || {};
+      if (!name || !String(name).trim()) {
+        return res.status(400).json({ success: false, message: 'Department name is required.' });
+      }
+      const created = await Department.create({
+        name: String(name).trim(),
+        floor: floor ? String(floor).trim() : null,
+      });
+      await logEvent(req, 'Created department', created.name);
+      return res.status(201).json({ success: true, data: created });
+    } catch (err) {
+      return next(err);
+    }
+  };
+
+  const updateDepartment = async (req, res, next) => {
+    try {
+      const department = await Department.findByPk(req.params.id);
+      if (!department) return res.status(404).json({ success: false, message: 'Department not found.' });
+      const { name, floor } = req.body || {};
+      await department.update({
+        ...(name !== undefined ? { name: String(name).trim() } : {}),
+        ...(floor !== undefined ? { floor: floor ? String(floor).trim() : null } : {}),
+      });
+      await logEvent(req, 'Updated department', department.name);
+      return res.json({ success: true, data: department });
+    } catch (err) {
+      return next(err);
+    }
+  };
+
+  const deleteDepartment = async (req, res, next) => {
+    try {
+      const department = await Department.findByPk(req.params.id);
+      if (!department) return res.status(404).json({ success: false, message: 'Department not found.' });
+      const assignedDoctors = await Doctor.count({ where: { departmentId: department.id } });
+      if (assignedDoctors > 0) {
+        return res.status(409).json({
+          success: false,
+          message: 'Cannot delete a department that still has assigned doctors.',
+        });
+      }
+      const deptName = department.name;
+      await department.destroy();
+      await logEvent(req, 'Deleted department', deptName);
+      return res.json({ success: true, message: 'Department deleted.' });
+    } catch (err) {
+      return next(err);
+    }
+  };
+
   const listDoctors = async (_req, res, next) => {
     try {
       const doctors = await Doctor.findAll({
@@ -189,6 +274,10 @@ export function createMedcarexController(models) {
           message: 'name, specialization, licenseNo, and departmentId are required.',
         });
       }
+      const department = await Department.findByPk(Number(departmentId));
+      if (!department) {
+        return res.status(404).json({ success: false, message: 'Department not found.' });
+      }
       const created = await Doctor.create({
         name: name.trim(),
         specialization: specialization.trim(),
@@ -202,6 +291,49 @@ export function createMedcarexController(models) {
         include: [{ model: Department, as: 'department', attributes: ['id', 'name', 'floor'] }],
       });
       return res.status(201).json({ success: true, data: full });
+    } catch (err) {
+      return next(err);
+    }
+  };
+
+  const updateDoctor = async (req, res, next) => {
+    try {
+      const doctor = await Doctor.findByPk(req.params.id);
+      if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found.' });
+      const { name, specialization, licenseNo, phone, availability, departmentId } = req.body || {};
+      if (departmentId !== undefined) {
+        const department = await Department.findByPk(Number(departmentId));
+        if (!department) {
+          return res.status(404).json({ success: false, message: 'Department not found.' });
+        }
+      }
+      await doctor.update({
+        ...(name !== undefined ? { name: String(name).trim() } : {}),
+        ...(specialization !== undefined ? { specialization: String(specialization).trim() } : {}),
+        ...(licenseNo !== undefined ? { licenseNo: String(licenseNo).trim().toUpperCase() } : {}),
+        ...(phone !== undefined ? { phone: phone || null } : {}),
+        ...(availability !== undefined ? { availability } : {}),
+        ...(departmentId !== undefined ? { departmentId: Number(departmentId) } : {}),
+      });
+      await logEvent(req, 'Updated doctor profile', `${doctor.name} (#${doctor.id})`);
+      const full = await Doctor.findByPk(doctor.id, {
+        include: [{ model: Department, as: 'department', attributes: ['id', 'name', 'floor'] }],
+      });
+      return res.json({ success: true, data: full });
+    } catch (err) {
+      return next(err);
+    }
+  };
+
+  const deleteDoctor = async (req, res, next) => {
+    try {
+      const doctor = await Doctor.findByPk(req.params.id);
+      if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found.' });
+      const docName = doctor.name;
+      await Patient.update({ primaryDoctorId: null }, { where: { primaryDoctorId: doctor.id } });
+      await doctor.destroy();
+      await logEvent(req, 'Removed doctor profile', docName);
+      return res.json({ success: true, message: 'Doctor removed.' });
     } catch (err) {
       return next(err);
     }
@@ -235,6 +367,13 @@ export function createMedcarexController(models) {
           message: 'patientId, doctorId, scheduledAt, and reason are required.',
         });
       }
+      const [patient, doctor] = await Promise.all([
+        Patient.findByPk(Number(patientId)),
+        Doctor.findByPk(Number(doctorId)),
+      ]);
+      if (!patient || !doctor) {
+        return res.status(404).json({ success: false, message: 'Patient or Doctor not found.' });
+      }
       const created = await Appointment.create({
         patientId: Number(patientId),
         doctorId: Number(doctorId),
@@ -259,7 +398,18 @@ export function createMedcarexController(models) {
     try {
       const appt = await Appointment.findByPk(req.params.id);
       if (!appt) return res.status(404).json({ success: false, message: 'Appointment not found.' });
-      await appt.update(req.body || {});
+      const { status, scheduledAt, reason } = req.body || {};
+      if (status !== undefined && !ALLOWED_APPOINTMENT_STATUSES.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid status. Allowed: ${ALLOWED_APPOINTMENT_STATUSES.join(', ')}.`,
+        });
+      }
+      await appt.update({
+        ...(status !== undefined ? { status } : {}),
+        ...(scheduledAt !== undefined ? { scheduledAt } : {}),
+        ...(reason !== undefined ? { reason: String(reason).trim() } : {}),
+      });
       await logEvent(req, `Updated appointment to ${appt.status}`, `Appointment #${appt.id}`);
       const full = await Appointment.findByPk(appt.id, {
         include: [
@@ -323,12 +473,18 @@ export function createMedcarexController(models) {
     login,
     getMe,
     listPatients,
+    getPatient,
     createPatient,
     updatePatient,
     deletePatient,
     listDepartments,
+    createDepartment,
+    updateDepartment,
+    deleteDepartment,
     listDoctors,
     createDoctor,
+    updateDoctor,
+    deleteDoctor,
     listAppointments,
     createAppointment,
     updateAppointment,

@@ -116,3 +116,89 @@ test('supports end-to-end patient, doctor, appointment, dashboard summary, and a
   assert.ok(summaryRes.json.data.kpis.totalPatients >= 5);
   assert.ok(summaryRes.json.data.recentActivity.length > 0);
 });
+
+test('supports Department CRUD, Doctor updates, Patient edits with null primaryDoctorId, and appointment validation', async () => {
+  const staffLogin = await api('/api/auth/login', {
+    method: 'POST',
+    body: { email: 'staff@medcarex.in', password: 'DemoPass@123' },
+  });
+  const staffToken = staffLogin.json.data.accessToken;
+
+  const adminLogin = await api('/api/auth/login', {
+    method: 'POST',
+    body: { email: 'admin@medcarex.in', password: 'DemoPass@123' },
+  });
+  const adminToken = adminLogin.json.data.accessToken;
+
+  // Employee cannot create department
+  const deptDenied = await api('/api/departments', {
+    method: 'POST',
+    token: staffToken,
+    body: { name: 'Dermatology', floor: 'Floor 2' },
+  });
+  assert.equal(deptDenied.status, 403);
+
+  // Admin creates, updates, and deletes an empty department
+  const deptCreate = await api('/api/departments', {
+    method: 'POST',
+    token: adminToken,
+    body: { name: 'Dermatology', floor: 'Floor 2' },
+  });
+  assert.equal(deptCreate.status, 201);
+  const deptId = deptCreate.json.data.id;
+
+  const deptUpdate = await api(`/api/departments/${deptId}`, {
+    method: 'PUT',
+    token: adminToken,
+    body: { floor: 'Floor 5 · Wing B' },
+  });
+  assert.equal(deptUpdate.status, 200);
+  assert.equal(deptUpdate.json.data.floor, 'Floor 5 · Wing B');
+
+  // Reassign doctor & delete department after moving doctor back
+  const docCreate = await api('/api/doctors', {
+    method: 'POST',
+    token: adminToken,
+    body: { name: 'Dr. Ritu Sen', specialization: 'Dermatology', licenseNo: 'MCI-90123', departmentId: deptId },
+  });
+  assert.equal(docCreate.status, 201);
+  const docId = docCreate.json.data.id;
+
+  // Cannot delete department with active doctor
+  const deptConflict = await api(`/api/departments/${deptId}`, { method: 'DELETE', token: adminToken });
+  assert.equal(deptConflict.status, 409);
+
+  const docUpdate = await api(`/api/doctors/${docId}`, {
+    method: 'PUT',
+    token: adminToken,
+    body: { departmentId: 1 },
+  });
+  assert.equal(docUpdate.status, 200);
+  assert.equal(docUpdate.json.data.departmentId, 1);
+
+  const deptDelete = await api(`/api/departments/${deptId}`, { method: 'DELETE', token: adminToken });
+  assert.equal(deptDelete.status, 200);
+
+  // Patient get + update with empty primaryDoctorId + delete
+  const patUpdate = await api('/api/patients/1', {
+    method: 'PUT',
+    token: staffToken,
+    body: { primaryDoctorId: '' },
+  });
+  assert.equal(patUpdate.status, 200);
+  assert.equal(patUpdate.json.data.primaryDoctorId, null);
+
+  const patGet = await api('/api/patients/1', { token: staffToken });
+  assert.equal(patGet.status, 200);
+
+  // Invalid appointment references return 404
+  const badAppt = await api('/api/appointments', {
+    method: 'POST',
+    token: adminToken,
+    body: { patientId: 99999, doctorId: 1, scheduledAt: '2026-11-30 09:00', reason: 'Check' },
+  });
+  assert.equal(badAppt.status, 404);
+
+  const docDelete = await api(`/api/doctors/${docId}`, { method: 'DELETE', token: adminToken });
+  assert.equal(docDelete.status, 200);
+});

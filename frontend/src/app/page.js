@@ -19,6 +19,7 @@ const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'patients', label: 'Patients' },
   { id: 'doctors', label: 'Doctors' },
+  { id: 'departments', label: 'Departments' },
   { id: 'appointments', label: 'Appointments' },
   { id: 'activity', label: 'Activity Logs' },
 ];
@@ -51,6 +52,7 @@ export default function MedCareXApp() {
     primaryDoctorId: '',
   });
   const [editingPatientId, setEditingPatientId] = useState(null);
+  const [editingDoctorId, setEditingDoctorId] = useState(null);
   const [doctorForm, setDoctorForm] = useState({
     name: '',
     specialization: '',
@@ -58,6 +60,12 @@ export default function MedCareXApp() {
     phone: '',
     departmentId: '',
   });
+  const [editingDepartmentId, setEditingDepartmentId] = useState(null);
+  const [departmentForm, setDepartmentForm] = useState({
+    name: '',
+    floor: '',
+  });
+  const [appointmentStatusFilter, setAppointmentStatusFilter] = useState('All');
   const [apptForm, setApptForm] = useState({
     patientId: '',
     doctorId: '',
@@ -165,12 +173,56 @@ export default function MedCareXApp() {
     }
   };
 
-  const handleAddDoctor = async (e) => {
+  const handleSaveDoctor = async (e) => {
     e.preventDefault();
     try {
-      await apiFetch('/doctors', { method: 'POST', body: doctorForm, token });
+      if (editingDoctorId) {
+        await apiFetch(`/doctors/${editingDoctorId}`, { method: 'PUT', body: doctorForm, token });
+        setStatusMessage('Doctor profile updated.');
+      } else {
+        await apiFetch('/doctors', { method: 'POST', body: doctorForm, token });
+        setStatusMessage('Doctor profile created.');
+      }
+      setEditingDoctorId(null);
       setDoctorForm({ name: '', specialization: '', licenseNo: '', phone: '', departmentId: '' });
-      setStatusMessage('Doctor profile created.');
+      await loadWorkspace(token, patientSearch);
+    } catch (err) {
+      setStatusMessage(err.message);
+    }
+  };
+
+  const handleDeleteDoctor = async (id) => {
+    try {
+      await apiFetch(`/doctors/${id}`, { method: 'DELETE', token });
+      setStatusMessage('Doctor profile removed.');
+      await loadWorkspace(token, patientSearch);
+    } catch (err) {
+      setStatusMessage(err.message);
+    }
+  };
+
+  const handleSaveDepartment = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingDepartmentId) {
+        await apiFetch(`/departments/${editingDepartmentId}`, { method: 'PUT', body: departmentForm, token });
+        setStatusMessage('Department updated.');
+      } else {
+        await apiFetch('/departments', { method: 'POST', body: departmentForm, token });
+        setStatusMessage('Department created.');
+      }
+      setEditingDepartmentId(null);
+      setDepartmentForm({ name: '', floor: '' });
+      await loadWorkspace(token, patientSearch);
+    } catch (err) {
+      setStatusMessage(err.message);
+    }
+  };
+
+  const handleDeleteDepartment = async (id) => {
+    try {
+      await apiFetch(`/departments/${id}`, { method: 'DELETE', token });
+      setStatusMessage('Department removed.');
       await loadWorkspace(token, patientSearch);
     } catch (err) {
       setStatusMessage(err.message);
@@ -506,13 +558,35 @@ export default function MedCareXApp() {
                   onChange={(e) => setPatientForm((p) => ({ ...p, notes: e.target.value }))}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2"
                 />
-                <button
-                  type="submit"
-                  className="inline-flex w-full items-center justify-center gap-1 rounded-lg bg-teal-600 py-2 font-semibold text-white hover:bg-teal-700"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  {editingPatientId ? 'Update Patient' : 'Add Patient'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-teal-600 py-2 font-semibold text-white hover:bg-teal-700"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    {editingPatientId ? 'Update Patient' : 'Add Patient'}
+                  </button>
+                  {editingPatientId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingPatientId(null);
+                        setPatientForm({
+                          fullName: '',
+                          age: '',
+                          gender: 'Male',
+                          phone: '',
+                          bloodGroup: 'O+',
+                          notes: '',
+                          primaryDoctorId: '',
+                        });
+                      }}
+                      className="rounded-lg border border-slate-200 px-3 py-2 font-medium text-slate-600 hover:bg-slate-50"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </form>
             </section>
 
@@ -546,6 +620,7 @@ export default function MedCareXApp() {
                         <td className="py-2.5">
                           <p className="font-semibold">{pt.fullName}</p>
                           <p className="text-slate-500">{pt.phone}</p>
+                          {pt.notes && <p className="mt-0.5 text-[11px] text-slate-400">{pt.notes}</p>}
                         </td>
                         <td className="py-2.5">
                           {pt.age}y · {pt.gender} · {pt.bloodGroup || 'N/A'}
@@ -593,11 +668,13 @@ export default function MedCareXApp() {
         {activeTab === 'doctors' && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <section className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-4">
-              <h2 className="text-sm font-semibold">Add Doctor Profile</h2>
+              <h2 className="text-sm font-semibold">
+                {editingDoctorId ? `Edit Doctor #${editingDoctorId}` : 'Add Doctor Profile'}
+              </h2>
               {!isAdminOrManager ? (
-                <p className="mt-2 text-xs text-slate-500">Admin or Manager role required to add doctors.</p>
+                <p className="mt-2 text-xs text-slate-500">Admin or Manager role required to manage doctors.</p>
               ) : (
-                <form onSubmit={handleAddDoctor} className="mt-3 space-y-3 text-xs">
+                <form onSubmit={handleSaveDoctor} className="mt-3 space-y-3 text-xs">
                   <input
                     type="text"
                     required
@@ -635,27 +712,171 @@ export default function MedCareXApp() {
                       </option>
                     ))}
                   </select>
-                  <button
-                    type="submit"
-                    className="w-full rounded-lg bg-teal-600 py-2 font-semibold text-white hover:bg-teal-700"
-                  >
-                    Add Doctor
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      className="flex-1 rounded-lg bg-teal-600 py-2 font-semibold text-white hover:bg-teal-700"
+                    >
+                      {editingDoctorId ? 'Update Doctor' : 'Add Doctor'}
+                    </button>
+                    {editingDoctorId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingDoctorId(null);
+                          setDoctorForm({ name: '', specialization: '', licenseNo: '', phone: '', departmentId: '' });
+                        }}
+                        className="rounded-lg border border-slate-200 px-3 py-2 font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
                 </form>
               )}
             </section>
 
             <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-8">
               {doctors.map((doc) => (
-                <div key={doc.id} className="rounded-xl border border-slate-200 bg-white p-4 text-xs">
-                  <p className="text-sm font-semibold text-slate-900">{doc.name}</p>
-                  <p className="text-teal-700">{doc.specialization}</p>
-                  <p className="mt-2 text-slate-500">
-                    Department: {doc.department?.name} · License: {doc.licenseNo}
-                  </p>
-                  <p className="mt-1 text-slate-500">{doc.availability}</p>
+                <div key={doc.id} className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 text-xs">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{doc.name}</p>
+                    <p className="text-teal-700">{doc.specialization}</p>
+                    <p className="mt-2 text-slate-500">
+                      Department: {doc.department?.name} · License: {doc.licenseNo}
+                    </p>
+                    <p className="mt-1 text-slate-500">{doc.availability}</p>
+                  </div>
+                  {isAdminOrManager && (
+                    <div className="mt-3 flex items-center gap-3 border-t border-slate-100 pt-2.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingDoctorId(doc.id);
+                          setDoctorForm({
+                            name: doc.name,
+                            specialization: doc.specialization,
+                            licenseNo: doc.licenseNo,
+                            phone: doc.phone || '',
+                            departmentId: String(doc.departmentId),
+                          });
+                        }}
+                        className="font-semibold text-teal-700"
+                      >
+                        Edit / Reassign
+                      </button>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDoctor(doc.id)}
+                          className="font-semibold text-rose-600"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
+            </section>
+          </div>
+        )}
+
+        {activeTab === 'departments' && (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <section className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-4">
+              <h2 className="text-sm font-semibold">
+                {editingDepartmentId ? `Edit Department #${editingDepartmentId}` : 'Add Clinical Department'}
+              </h2>
+              {!isAdminOrManager ? (
+                <p className="mt-2 text-xs text-slate-500">Admin or Manager role required to manage departments.</p>
+              ) : (
+                <form onSubmit={handleSaveDepartment} className="mt-3 space-y-3 text-xs">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Department Name (e.g., Dermatology)"
+                    value={departmentForm.name}
+                    onChange={(e) => setDepartmentForm((p) => ({ ...p, name: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Floor / Wing (e.g., Floor 2 · Wing B)"
+                    value={departmentForm.floor}
+                    onChange={(e) => setDepartmentForm((p) => ({ ...p, floor: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      className="flex-1 rounded-lg bg-teal-600 py-2 font-semibold text-white hover:bg-teal-700"
+                    >
+                      {editingDepartmentId ? 'Update Department' : 'Create Department'}
+                    </button>
+                    {editingDepartmentId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingDepartmentId(null);
+                          setDepartmentForm({ name: '', floor: '' });
+                        }}
+                        className="rounded-lg border border-slate-200 px-3 py-2 font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </form>
+              )}
+            </section>
+
+            <section className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-8">
+              <h2 className="text-sm font-semibold">Departments Directory ({departments.length})</h2>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-slate-500">
+                      <th className="py-2">Department</th>
+                      <th className="py-2">Location</th>
+                      <th className="py-2">Assigned Doctors</th>
+                      <th className="py-2 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {departments.map((dept) => (
+                      <tr key={dept.id}>
+                        <td className="py-2.5 font-semibold">{dept.name}</td>
+                        <td className="py-2.5 text-slate-500">{dept.floor || 'Main Building'}</td>
+                        <td className="py-2.5">{dept.doctors?.length || 0}</td>
+                        <td className="py-2.5 text-right">
+                          {isAdminOrManager && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingDepartmentId(dept.id);
+                                setDepartmentForm({ name: dept.name, floor: dept.floor || '' });
+                              }}
+                              className="mr-2 font-semibold text-teal-700"
+                            >
+                              Edit
+                            </button>
+                          )}
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteDepartment(dept.id)}
+                              className="font-semibold text-rose-600"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </section>
           </div>
         )}
@@ -716,7 +937,20 @@ export default function MedCareXApp() {
             </section>
 
             <section className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-8">
-              <h2 className="text-sm font-semibold">Appointment Queue & History ({appointments.length})</h2>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold">Appointment Queue & History ({appointments.length})</h2>
+                <select
+                  aria-label="Filter appointments by status"
+                  value={appointmentStatusFilter}
+                  onChange={(e) => setAppointmentStatusFilter(e.target.value)}
+                  className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-700"
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
@@ -729,7 +963,9 @@ export default function MedCareXApp() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {appointments.map((appt) => (
+                    {appointments
+                      .filter((appt) => appointmentStatusFilter === 'All' || appt.status === appointmentStatusFilter)
+                      .map((appt) => (
                       <tr key={appt.id}>
                         <td className="py-2.5 font-semibold">{appt.patient?.fullName}</td>
                         <td className="py-2.5">{appt.doctor?.name}</td>
@@ -739,7 +975,7 @@ export default function MedCareXApp() {
                         </td>
                         <td className="py-2.5 font-semibold">{appt.status}</td>
                         <td className="py-2.5 text-right">
-                          {isAdminOrManager && appt.status === 'Scheduled' && (
+                          {isAdminOrManager && appt.status === 'Scheduled' ? (
                             <>
                               <button
                                 type="button"
@@ -756,6 +992,8 @@ export default function MedCareXApp() {
                                 Cancel
                               </button>
                             </>
+                          ) : (
+                            <span className="text-slate-400">—</span>
                           )}
                         </td>
                       </tr>
